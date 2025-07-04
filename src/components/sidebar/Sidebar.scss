@@ -1,0 +1,28 @@
+.sidebar {
+  background-color: #ccc;
+  display: block;
+  padding: 25px 2px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+
+  &__item {
+    width: 201px;
+    &:not(:last-child) {
+      margin-bottom: 20px;
+    }
+  }
+
+  &__button {
+    font-size: 30px;
+    border: 1px solid transparent;
+    border-radius: 5px;
+    padding: 10px;
+    width: 100%;
+
+    &-active {
+      border: 1px solid black;
+      background-color: #5300ff;
+    }
+  }
+}
