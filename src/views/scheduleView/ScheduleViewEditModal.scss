@@ -1,0 +1,45 @@
+.editModal {
+  position: absolute;
+  background-color: #ccc;
+  padding: 50px;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 1px solid black;
+
+  &__title {
+    margin-bottom: 25px;
+    text-align: center;
+  }
+
+  &__select {
+    border: 1px solid black;
+    padding: 3px;
+    font-weight: 500;
+    background-color: #fff;
+  }
+
+  &__buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 25px;
+
+    & button {
+      background-color: #5300ff;
+      padding: 5px 10px;
+      border-radius: 10px;
+      color: #ccc;
+      font-size: 20px;
+      transition: opacity 0.3s;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      &:active {
+        opacity: 0.4
+      }
+    }
+  }
+}

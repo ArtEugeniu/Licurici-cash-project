@@ -1,0 +1,43 @@
+.addModal {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  border: 1px solid black;
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 15px;
+
+  &__title {
+    margin-bottom: 15px;
+  }
+
+  &__date {
+    border: 1px solid black;
+    border-radius: 5px;
+    padding: 5px;
+    margin-bottom: 15px;
+  }
+
+  &__buttons {
+    display: flex;
+    gap: 25px;
+
+    & button {
+      background-color: #5300ff;
+      padding: 5px 10px;
+      border-radius: 10px;
+      color: #ccc;
+      font-size: 20px;
+      transition: opacity 0.3s;
+
+      &:hover {
+        opacity: 0.8;
+      }
+
+      &:active {
+        opacity: 0.4
+      }
+    }
+  }
+  
+}
