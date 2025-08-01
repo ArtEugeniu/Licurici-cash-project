@@ -49,7 +49,7 @@ const SpectaclesView: React.FC = () => {
     const filtered = spectacles.filter(item => {
       return item.title.toLocaleLowerCase().includes(search.toLocaleLowerCase());
     })
-    setFilteredSpectacles(search === '' ? spectacles : filtered);
+    setFilteredSpectacles(search === '' ? spectacles : filtered); 
   }, [spectacles, search])
 
   const handleAddSpectacle = async (title: string, type: string) => {
