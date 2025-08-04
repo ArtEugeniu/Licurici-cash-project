@@ -1,5 +1,4 @@
 import './ScheduleView.scss';
-import { supabase } from '../../supabaseClient';
 import { useEffect, useState } from 'react';
 import ScheduleViewModal from './ScheduleViewModal';
 import ScheduleViewEditModal from './ScheduleViewEditModal';
@@ -27,21 +26,27 @@ const ScheduleView: React.FC = () => {
   });
 
   const scheduleList = async () => {
-    const { data, error } = await supabase.from('schedule').select('*');
-    if (error) {
-      alert('Eroare: ' + error.message);
-      return;
+
+    const response = await fetch('http://localhost:5000/api/schedule', {
+      method: 'GET',
+    });
+
+    if (!response.ok) {
+      throw new Error('Eroare la încărcarea afișei');
     }
+
+    const data = await response.json();
+
     if (data) {
 
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const sorted = data.sort((a, b) => {
+      const sorted = data.sort((a: any, b: any) => {
         return new Date(a.date).getTime() - new Date(b.date).getTime()
       })
 
-      const filtered = sorted.filter(item => {
+      const filtered = sorted.filter((item: any) => {
         const itemDate = new Date(item.date);
         return itemDate >= today;
       });
@@ -60,12 +65,25 @@ const ScheduleView: React.FC = () => {
 
     const confirm = window.confirm('Sunteti sigur ca doriti sa editati acest spectacol?');
 
-    if (confirm) {
-      await supabase.from('schedule').update({ title: title, type: type }).eq('id', id);
+    if (!confirm) return;
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, type })
+      });
+
+      if (!response.ok) {
+        alert('Eroare la editarea spectacolului');
+      }
+
+
       scheduleList();
       setShowModalEdit(false);
+    } catch (error) {
+      alert('Eroare la editarea spectacolului')
     }
-
   }
 
   const removeSpectacle = async (id: string) => {
@@ -73,13 +91,14 @@ const ScheduleView: React.FC = () => {
     const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
     if (!confirmed) return;
 
-    await supabase.from('sales').delete().eq('schedule_id', id);
-    const { error: scheduleError } = await supabase.from('schedule').delete().eq('id', id);
-    if (scheduleError) {
-      alert('Eroare la stergere: ' + scheduleError.message)
+    const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
+      method: 'DELETE'
+    })
+
+    if (response.ok) {
+      setScheduleData(prev => prev.filter(item => item.id !== id));
     } else {
-      alert('Succes');
-      scheduleList();
+      alert('Eroare la ștergere');
     }
   }
 

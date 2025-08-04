@@ -1,6 +1,6 @@
 import './ScheduleViewEditModal.scss';
 import { useState, useEffect } from 'react';
-import { supabase } from '../../supabaseClient';
+
 
 type ScheduleDataType = {
   time: string
@@ -34,17 +34,14 @@ const ScheduleViewEditModal: React.FC<ScheduleViewEditModalProps> = ({ selectedS
 
   useEffect(() => {
     const fetchSpectaclesList = async () => {
-      const { data, error } = await supabase.from('spectacles').select('title, type');
+      const response = await fetch('http://localhost:5000/api/spectacles', {
+        method: 'GET'
+      });
 
-      if (error) {
-        alert('Eroare la obtinerea listei spectacolelor: ' + error.message);
-        return;
-      }
-
-      if (data) {
-        setSpectacleList(data.map(item => ({ title: item.title, id: selectedSpectacle.id, type: item.type })));
-      }
+      const data = await response.json();
+      setSpectacleList(data);
     }
+
 
     fetchSpectaclesList();
   }, []);

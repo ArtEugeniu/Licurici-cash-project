@@ -1,6 +1,6 @@
 import './ScheduleViewModal.scss';
 import { useState } from 'react';
-import { supabase } from '../../supabaseClient';
+import { v4 as uuid } from 'uuid';
 
 type ScheduleDataType = {
   time: string
@@ -25,20 +25,32 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
       alert('Eroare: Alegeti numarul de bilete')
       return
     }
-    const { error } = await supabase.from('sales').insert([
-      {
-        quantity: ticketNumber,
-        payment_method: paymentMethod,
-        total_sum: totalPrice(),
-        schedule_id: selectedSpectacle.id,
-        type: selectedSpectacle.type
+
+    const randomId = uuid();
+
+    try {
+      const response = await fetch('http://localhost:5000/api/sales', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: randomId,
+          quantity: ticketNumber,
+          payment_method: paymentMethod,
+          total_sum: totalPrice(),
+          type: selectedSpectacle.type
+        })
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error);
+        return
       }
-    ])
-    if (error) {
-      alert('Eroare: ' + error.message)
-    } else {
-      alert('Succes!')
+      setShowModal(false);
+    } catch (error) {
+      alert('Eroare la vanzare: ' + error)
     }
+
   }
 
 

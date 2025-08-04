@@ -21,7 +21,6 @@ interface DailyReportsProps {
 
 const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
 
-
   const getTodayDate = (): string => {
     const today = new Date();
     const year = today.getFullYear();
@@ -33,12 +32,12 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
 
   const filteredSales = sales.filter(item => {
-    const salesDate = new Date(item.created_at);
+    const salesDate = new Date(item.created_at.replace(' ', 'T'));
+    if (isNaN(salesDate.getTime())) return false; // некорректная дата — пропускаем
     const formatedDate = salesDate.toISOString().slice(0, 10);
-    return formatedDate === selectedDate
-  })
-
-
+    return formatedDate === selectedDate;
+  });
+  
 
   const cashSales = filteredSales.filter(sale => sale.payment_method === 'cash');
   const cardSales = filteredSales.filter(sale => sale.payment_method === 'card');
@@ -64,7 +63,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
       <label className="daily__date">
         Selectati data:{" "}
         <input
-        className="daily__date-input"
+          className="daily__date-input"
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}

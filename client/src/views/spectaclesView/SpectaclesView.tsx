@@ -1,8 +1,8 @@
 import './Spectaclesview.scss';
 import { useEffect, useState } from 'react';
-import { supabase } from '../../supabaseClient';
 import SpectaclesViewModal from './SpectacleViewModal';
 import SpectaclesViewAddModal from './SpectaclesViewAddModal';
+import { v4 as uuid } from 'uuid';
 
 interface Spectacles {
   id: string;
@@ -34,11 +34,12 @@ const SpectaclesView: React.FC = () => {
 
   useEffect(() => {
     const fetchSpectacles = async () => {
-      const { data, error } = await supabase.from('spectacles').select('*');
-      if (error) {
-        console.error('Spectacles Download error: ' + error.message)
-      } else {
+      try {
+        const response = await fetch('http://localhost:5000/api/spectacles');
+        const data = await response.json();
         setSpectacles(data)
+      } catch (error) {
+        alert('Eroare la încărcarea spectacolelor:' + error)
       }
     }
 
@@ -49,17 +50,23 @@ const SpectaclesView: React.FC = () => {
     const filtered = spectacles.filter(item => {
       return item.title.toLocaleLowerCase().includes(search.toLocaleLowerCase());
     })
-    setFilteredSpectacles(search === '' ? spectacles : filtered); 
+    setFilteredSpectacles(search === '' ? spectacles : filtered);
   }, [spectacles, search])
 
   const handleAddSpectacle = async (title: string, type: string) => {
-    const { data, error } = await supabase.from('spectacles').insert([{ title, type }]);
-    if (error) {
-      console.error('Eroare: ' + error.message)
-      return
-    }
+    const randomId = uuid();
+    const response = await fetch('http://localhost:5000/api/spectacles', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id: randomId, title, type })
+    });
 
-    setSpectacles((prev) => [...prev, ...(data || [])])
+    const data = await response.json();
+
+
+    setSpectacles(data);
   };
 
   const handleDeleteSpectacle = async (id: string) => {
@@ -67,12 +74,12 @@ const SpectaclesView: React.FC = () => {
     const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
     if (!confirmed) return;
 
-    const { error } = await supabase.from('spectacles').delete().eq('id', id);
-    if (error) {
-      console.error('Eroare: ' + error.message);
+    const response = await fetch(`http://localhost:5000/api/spectacles/${id}`, {
+      method: 'DELETE'
+    });
 
-      setSpectacles(prev => prev.filter(item => item.id !== id));
-    }
+    const data = await response.json();
+    setSpectacles(data);
   }
 
   const handleCancelAddToSchedule = async () => {
@@ -81,6 +88,8 @@ const SpectaclesView: React.FC = () => {
 
   const handleAddToSchedule = async () => {
     const date = scheduleData.date;
+    const time = scheduleData.time;
+    const randomId = uuid();
 
     if (!isValidDate(String(date))) {
       alert('Introduceți dată corectă')
@@ -92,21 +101,36 @@ const SpectaclesView: React.FC = () => {
       return;
     }
 
-    const { data: existing } = await supabase.from('schedule').select('*').eq('title', scheduleData.title).eq('date', scheduleData.date);
-
-    if (existing && existing.length > 0) {
-      alert(`Spectacolul ${scheduleData.title} deja este in program pe data de ${scheduleData.date}`)
-      return
+    if (!isValidTime(String(time))) {
+      alert('Introduceți ora corectă');
+      return;
     }
 
-    const { error } = await supabase.from('schedule').insert([{ title: scheduleData.title, type: scheduleData.type, date: scheduleData.date, time: scheduleData.time }]);
+    try {
+     const response = await fetch('http://localhost:5000/api/schedule', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: randomId,
+          title: scheduleData.title,
+          type: scheduleData.type,
+          date: scheduleData.date,
+          time: scheduleData.time
+        })
+      });
 
-    if (error) {
-      console.error('Eroare: ' + error.message)
+      if(!response.ok) {
+        const errorData = await response.json();
+        alert(errorData.error);
+        return
+      }
+
+      setShowModalAdd(false);
+    } catch (error) {
+      alert('Eroare la adaugarea spectacolului in program: ' + error)
     }
-
-    setShowModalAdd(false);
-
   }
 
   function isValidDate(dateStr: string) {
@@ -130,6 +154,13 @@ const SpectaclesView: React.FC = () => {
 
 
     return inputDate < today;
+  }
+
+  function isValidTime(timeStr: string): boolean {
+    if (!timeStr) return false;
+
+    const regex = /^([01]\d|2[0-3]):([0-5]\d)$/;
+    return regex.test(timeStr);
   }
 
 

@@ -1,7 +1,6 @@
 import DailyReports from './reports/dailyReports/DailyReports';
 import MonthlyReports from './reports/monthly/MonthlyReports';
 import SpectacleReports from './reports/spectacleReports/SpectacleReports';
-import { supabase } from '../../supabaseClient';
 import { useEffect, useState } from 'react';
 import './ReportsView.scss';
 
@@ -24,48 +23,33 @@ const ReportsView: React.FC = () => {
 
   useEffect(() => {
     const fetchSales = async () => {
-      let query = supabase
-        .from('sales')
-        .select(`
-        id,
-        quantity,
-        total_sum,
-        payment_method,
-        type,
-        created_at,
-        schedule:schedule_id (
-          title,
-          date
-        )
-      `)
-        .order('created_at', { ascending: false });
+      const response = await fetch('http://localhost:5000/api/sales', {
+        method: 'GET'
+      });
 
-      const { data, error } = await query;
-
-      if (error) {
-        console.error('Eroare la încărcarea vânzărilor:', error.message);
-      } else {
-        const formatted = (data || []).map((sale) => ({
-          ...sale,
-          schedule: Array.isArray(sale.schedule) ? sale.schedule[0] : sale.schedule,
-        }));
-
-        setSales(formatted);
+      if (!response.ok) {
+        alert('Eroare la incarcarea vanzarilor')
+        return;
       }
-    };
 
+      const data = await response.json();
+      
+      setSales(data)
+
+    };
 
     fetchSales();
 
   }, []);
+
 
   return (
 
     <div className="reports">
       <h2 className="reports__title">Rapoarte vânzări</h2>
       <DailyReports sales={sales} />
-      <MonthlyReports sales={sales} />
-      <SpectacleReports sales={sales}/>
+      {/* <MonthlyReports sales={sales} /> */}
+      {/* <SpectacleReports sales={sales} /> */}
     </div>
 
   )
