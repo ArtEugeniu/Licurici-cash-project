@@ -1,6 +1,7 @@
 import DailyReports from './reports/dailyReports/DailyReports';
 import MonthlyReports from './reports/monthly/MonthlyReports';
 import SpectacleReports from './reports/spectacleReports/SpectacleReports';
+import PeriodReports from './reports/periodReports/PeriodReports';
 import { useEffect, useState } from 'react';
 import './ReportsView.scss';
 
@@ -11,9 +12,8 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    title: string;
-  };
+  title: string;
+  schedule_id: string
 };
 
 
@@ -33,14 +33,16 @@ const ReportsView: React.FC = () => {
       }
 
       const data = await response.json();
-      
+  
       setSales(data)
-
     };
 
     fetchSales();
 
+
   }, []);
+
+
 
 
   return (
@@ -48,8 +50,9 @@ const ReportsView: React.FC = () => {
     <div className="reports">
       <h2 className="reports__title">Rapoarte vânzări</h2>
       <DailyReports sales={sales} />
-      {/* <MonthlyReports sales={sales} /> */}
-      {/* <SpectacleReports sales={sales} /> */}
+      <MonthlyReports sales={sales} />
+      <SpectacleReports sales={sales} />
+      <PeriodReports sales={sales} />
     </div>
 
   )

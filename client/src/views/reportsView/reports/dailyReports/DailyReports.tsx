@@ -10,9 +10,7 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    title: string;
-  };
+  title: string
 };
 
 interface DailyReportsProps {
@@ -20,6 +18,7 @@ interface DailyReportsProps {
 };
 
 const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
+  
 
   const getTodayDate = (): string => {
     const today = new Date();
@@ -33,7 +32,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
 
   const filteredSales = sales.filter(item => {
     const salesDate = new Date(item.created_at.replace(' ', 'T'));
-    if (isNaN(salesDate.getTime())) return false; // некорректная дата — пропускаем
+    if (isNaN(salesDate.getTime())) return false;
     const formatedDate = salesDate.toISOString().slice(0, 10);
     return formatedDate === selectedDate;
   });
@@ -56,6 +55,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
 
   const totalTickets = filteredSales.reduce((sum, s) => sum + s.quantity, 0);
   const totalAmount = filteredSales.reduce((sum, s) => sum + s.total_sum, 0);
+
 
   return (
     <div className="daily">
@@ -83,7 +83,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
           {filteredSales.map((sale) => (
             <tr key={sale.id}>
               <td>{new Date(sale.created_at).toLocaleDateString()}</td>
-              <td>{sale.schedule?.title ?? '—'}</td>
+              <td>{sale.title}</td>
               <td>{sale.quantity}</td>
               <td>{sale.total_sum} MDL</td>
               <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>

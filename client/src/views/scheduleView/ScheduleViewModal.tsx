@@ -20,6 +20,8 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
   const [ticketNumber, setTicketNumber] = useState<number>(1);
   const [paymentMethod, setPaymentMethod] = useState<string>('cash');
 
+  console.log(selectedSpectacle)
+
   const addSale = async () => {
     if (ticketNumber === 0) {
       alert('Eroare: Alegeti numarul de bilete')
@@ -37,7 +39,9 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
           quantity: ticketNumber,
           payment_method: paymentMethod,
           total_sum: totalPrice(),
-          type: selectedSpectacle.type
+          type: selectedSpectacle.type,
+          title: selectedSpectacle.title,
+          schedule_id: selectedSpectacle.id
         })
       })
 

@@ -11,9 +11,7 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    title: string;
-  };
+  title: string
 };
 
 interface MonthlyReportsProps {

@@ -25,10 +25,7 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    date?: string;
-    title: string;
-  };
+  title: string
 };
 
 export type SpectacleReportData = {

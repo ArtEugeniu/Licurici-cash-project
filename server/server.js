@@ -137,12 +137,12 @@ app.get('/api/sales', async (req, res) => {
 
 app.post('/api/sales', async (req, res) => {
   console.log('POST /api/sales BODY:', req.body);
-  const { id, payment_method, quantity, type, total_sum } = req.body;
+  const { id, payment_method, quantity, type, total_sum, title, schedule_id } = req.body;
   try {
     await db.run(
-      `INSERT INTO sales (id, quantity, payment_method, total_sum, type)
-       VALUES (?, ?, ?, ?, ?)`,
-      [id, quantity, payment_method, total_sum, type]
+      `INSERT INTO sales (id, quantity, payment_method, total_sum, type, title, schedule_id)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+      [id, quantity, payment_method, total_sum, type, title, schedule_id]
     );
 
 
@@ -153,9 +153,5 @@ app.post('/api/sales', async (req, res) => {
   }
 });
 
-app.use((err, req, res, next) => {
-  console.error('Global error handler:', err);
-  res.status(500).json({ error: 'test error' });
-});
 
 app.listen(5000, () => console.log('Server running on http://localhost:5000'));

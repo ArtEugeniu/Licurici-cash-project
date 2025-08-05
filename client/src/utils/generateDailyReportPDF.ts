@@ -25,9 +25,7 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    title: string;
-  };
+  title: string
 };
 
 export type DailyReportData = {
@@ -60,7 +58,7 @@ export const generateDailyReportPDF = (data: DailyReportData) => {
 
   const tableRows = data.filteredSales.map((sale) => [
     new Date(sale.created_at).toLocaleDateString(),
-    sale.schedule?.title ?? '—',
+    sale.title ?? '—',
     sale.quantity.toString(),
     `${sale.total_sum} MDL`,
     sale.payment_method === 'cash' ? 'Numerar' : 'Card',

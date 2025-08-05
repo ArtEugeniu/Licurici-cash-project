@@ -25,9 +25,7 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  schedule: {
-    title: string;
-  };
+  title: string
 };
 
 export type MonthlyReportData = {
@@ -71,7 +69,7 @@ export const generateMonthlyReportPDF = (data: MonthlyReportData) => {
 
 
   const groupedByShow = filteredSales.reduce<Record<string, { tickets: number; amount: number }>>((acc, sale) => {
-    const title = sale.schedule?.title ?? '—';
+    const title = sale.title ?? '—';
     if (!acc[title]) acc[title] = { tickets: 0, amount: 0 };
     acc[title].tickets += sale.quantity;
     acc[title].amount += sale.total_sum;
