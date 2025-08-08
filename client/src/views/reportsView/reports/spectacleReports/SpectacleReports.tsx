@@ -42,17 +42,17 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
       } catch (error) {
         alert('Eroare la primirea datei spectacolului: ' + error);
       }
-
-
     }
 
     getSpectacleDate()
   }, []);
 
+
+
   const [selectedDate, setDateFrom] = useState<string>(getCurrentDate());
   const [dateTo, setDateTo] = useState<string>(getCurrentDate());
   const [spectaclesList, setSpectaclesList] = useState<string[]>([]);
-  const [selectedSpectacle, setSelectedSpectacle] = useState<string>('');
+  const [selectedSpectacle, setSelectedSpectacle] = useState<string>('toate spectacolele');
   const [scheduleList, setScheduleList] = useState<{
     date: string,
     id: string,
@@ -62,14 +62,22 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   }[]>([]);
 
   useEffect(() => {
+    console.log(scheduleList)
+  }, [scheduleList])
+
+  useEffect(() => {
     const fetchSpectaclesList = async () => {
       try {
         const response = await fetch('http://localhost:5000/api/spectacles', {
           method: 'GET'
         })
 
-        const data = await response.json();
-        setSpectaclesList(Array.from(new Set(data.map((sale: { title: string }) => sale.title))));
+        const data: { title: string }[] = await response.json();
+        setSpectaclesList([
+          'Toate Spectacolele',
+          ...Array.from(new Set(data.map((sale: { title: string }) => sale.title)))
+        ]
+        );
 
       } catch (error) {
         alert('Eroare la incarcarea listei spectacolelor: ' + error)
@@ -83,35 +91,73 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   const filteredSales = sales.filter(sale => {
     const schedule = scheduleList.find(id => id.id === sale.schedule_id);
 
+    if(!schedule) return false;
+
+    if (selectedSpectacle === 'toate spectacolele') {
+    return schedule.date >= selectedDate && schedule.date <= dateTo;
+  }
+      
+
     return (
-      schedule?.title.toLowerCase() === selectedSpectacle.toLowerCase() &&
-      schedule?.date >= selectedDate &&
-      schedule?.date <= dateTo
+      schedule.title.toLowerCase() === selectedSpectacle.toLowerCase() &&
+      schedule.date >= selectedDate &&
+      schedule.date <= dateTo
     )
   });
 
+  const groupedByDateAndTitle = filteredSales.reduce<Record<
+    string, {
+      title: string,
+      card_method: number,
+      card_sum: number,
+      cash_method: number,
+      cash_sum: number,
+      total_tickets: number,
+      total_sum: number
+    }
+  >>((acc, sale) => {
+    const spectacle = scheduleList.find(presentation => presentation.id === sale.schedule_id);
+    if (!spectacle) return acc;
+
+    const key = spectacle.date;
+
+    if (!acc[key]) {
+      acc[key] = {
+        title: sale.title,
+        card_method: 0,
+        card_sum: 0,
+        cash_method: 0,
+        cash_sum: 0,
+        total_tickets: 0,
+        total_sum: 0
+      }
+    };
+
+    acc[key].card_method += sale.payment_method === 'card' ? sale.quantity : 0;
+    acc[key].card_sum += sale.payment_method === 'card' ? sale.total_sum : 0;
+    acc[key].cash_method += sale.payment_method === 'cash' ? sale.quantity : 0;
+    acc[key].cash_sum += sale.payment_method === 'cash' ? sale.total_sum : 0;
+    acc[key].total_tickets += sale.quantity;
+    acc[key].total_sum += sale.total_sum;
+
+    return acc;
+  }, {})
+
+  const sortedEntries = Object.entries(groupedByDateAndTitle).sort(([dateA], [dateB]) => {
+    if (dateA < dateB) return -1;
+    if (dateA > dateB) return 1;
+    return 0;
+  });
+
+
+  useEffect(() => {
+    console.log(groupedByDateAndTitle)
+
+  }, [groupedByDateAndTitle]);
+
   useEffect(() => {
     console.log(filteredSales)
-
   }, [filteredSales])
-
-  const groupedByDateAndTitle = filteredSales.reduce<
-  Record<string, { tickets: number; amount: number }>
->((acc, sale) => {
-  const schedule = scheduleList.find(s => s.id === sale.schedule_id);
-  if (!schedule) return acc;
-
-  const key = schedule.date;
-
-  if (!acc[key]) {
-    acc[key] = { tickets: 0, amount: 0 };
-  }
-
-  acc[key].tickets += sale.quantity;
-  acc[key].amount += sale.total_sum;
-
-  return acc;
-}, {});
 
 
 
@@ -131,6 +177,13 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   const totalTickets = filteredSales.reduce((sum, s) => sum + s.quantity, 0);
 
   const handleDownloadPDF = () => {
+    const sortedGroupedData = Object.entries(groupedByDateAndTitle)
+      .sort(([dateA], [dateB]) => (dateA < dateB ? -1 : dateA > dateB ? 1 : 0))
+      .map(([date, data]) => ({
+        date,
+        ...data
+      }));
+
     const data: SpectacleReportData = {
       selectedDate,
       spectacleTitle,
@@ -140,6 +193,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
       totalCashSum,
       totalCardSum,
       totalSum,
+      groupedData: sortedGroupedData,
     };
     generateSpectacleReportPDF(data);
   };
@@ -165,40 +219,65 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
         }
       </select>
       {spectacleTitle !== '' ? (
-  <div className='spectacle__summary'>
-    <h2>{spectacleTitle} {selectedDate} - {dateTo}</h2>
-    
-    <div>
-      {Object.entries(groupedByDateAndTitle).map(([date, info]) => (
-        <p key={date}>
-          <strong>{date}</strong>: {info.tickets} bilete — {info.amount} MDL
-        </p>
-      ))}
-    </div>
 
-    <hr/>
+        <>
+          <table className='spectacle__table'>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Spectacol</th>
+                <th>Nr. bilete numerar</th>
+                <th>Suma bilete numerar</th>
+                <th>Nr. bilete card</th>
+                <th>Suma bilete card</th>
+                <th>Nr. total bilete</th>
+                <th>Suma totala</th>
+              </tr>
+            </thead>
+            <tbody>
+              {sortedEntries.map(([date, data]) => {
+                return (
+                  <tr key={date}>
+                    <td>{date.split('-').reverse().join('-')}</td>
+                    <td>{data.title}</td>
+                    <td>{data.cash_method}</td>
+                    <td>{data.cash_sum}</td>
+                    <td>{data.card_method}</td>
+                    <td>{data.card_sum}</td>
+                    <td>{data.total_tickets}</td>
+                    <td>{data.total_sum}</td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
 
-    <div>
-      <p><strong>Nr. de bilete numerar:</strong> {totalCashTickets}</p>
-      <p><strong>Suma pe bilete numerar:</strong> {totalCashSum} MDL</p>
-      <p><strong>Nr. de bilete card:</strong> {totalCardTickets}</p>
-      <p><strong>Suma pe bilete card:</strong> {totalCardSum} MDL</p>
-      <p><strong>Bilete total:</strong> {totalTickets}</p>
-      <p><strong>Suma totala:</strong> {totalSum} MDL</p>
-    </div>
 
-    <button
-      className='spectacle__pdf-button'
-      onClick={handleDownloadPDF}
-      style={{ marginTop: '10px' }}
-      disabled={!selectedSpectacle || selectedDate > dateTo}
-    >
-      Descarcă PDF
-    </button>
-  </div>
-) : (
-  <h3>Nu exista spectacol pe data de {selectedDate}</h3>
-)}
+          <div className='spectacle__summary'>
+
+
+            <div>
+              <p><strong>Nr. de bilete numerar:</strong> {totalCashTickets}</p>
+              <p><strong>Suma pe bilete numerar:</strong> {totalCashSum} MDL</p>
+              <p><strong>Nr. de bilete card:</strong> {totalCardTickets}</p>
+              <p><strong>Suma pe bilete card:</strong> {totalCardSum} MDL</p>
+              <p><strong>Bilete total:</strong> {totalTickets}</p>
+              <p><strong>Suma totala:</strong> {totalSum} MDL</p>
+            </div>
+
+            <button
+              className='spectacle__pdf-button'
+              onClick={handleDownloadPDF}
+              style={{ marginTop: '10px' }}
+              disabled={!selectedSpectacle || selectedDate > dateTo}
+            >
+              Descarcă PDF
+            </button>
+          </div>
+        </>
+      ) : (
+        <h3>Nu exista spectacol pe data de {selectedDate}</h3>
+      )}
     </div>
   )
 }

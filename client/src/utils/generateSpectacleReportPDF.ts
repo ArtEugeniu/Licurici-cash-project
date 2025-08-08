@@ -37,18 +37,29 @@ export type SpectacleReportData = {
   totalCashSum: number;
   totalCardSum: number;
   totalSum: number;
+
+    groupedData: {
+    date: string;
+    title: string;
+    card_method: number;
+    card_sum: number;
+    cash_method: number;
+    cash_sum: number;
+    total_tickets: number;
+    total_sum: number;
+  }[];
 };
 
 export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
   const {
     selectedDate,
     spectacleTitle,
-    filteredSales,
     totalCashTickets,
     totalCardTickets,
     totalCashSum,
     totalCardSum,
     totalSum,
+    groupedData,
   } = data;
 
   const doc = new jsPDF();
@@ -59,23 +70,35 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
   doc.addFont('Roboto-Bold.ttf', 'Roboto', 'bold');
 
   doc.setFont('Roboto');
-
-
   doc.setFontSize(16);
   doc.text(`Raport pentru spectacol — ${spectacleTitle}`, 14, 15);
-  doc.text(`Data: ${selectedDate}`, 14, 23);
+  doc.text(`Perioada: ${selectedDate}`, 14, 23);
 
-  const tableRows = filteredSales.map(sale => [
-    sale.type,
-    sale.quantity.toString(),
-    `${sale.total_sum} MDL`,
-    sale.payment_method === 'cash' ? 'Numerar' : 'Card',
+  // Подготовка данных для таблицы из groupedData
+  const tableRows = groupedData.map(item => [
+    item.date.split('-').reverse().join('-'), // Дата в формате дд-мм-гггг
+    item.title,
+    item.cash_method.toString(),
+    `${item.cash_sum} MDL`,
+    item.card_method.toString(),
+    `${item.card_sum} MDL`,
+    item.total_tickets.toString(),
+    `${item.total_sum} MDL`
   ]);
 
   autoTable(doc, {
-    head: [['Tip bilet', 'Cantitate', 'Suma', 'Metodă plată']],
-    styles: { font: 'Roboto' },
+    head: [[
+      'Data',
+      'Spectacol',
+      'Nr. bilete numerar',
+      'Suma bilete numerar',
+      'Nr. bilete card',
+      'Suma bilete card',
+      'Nr. total bilete',
+      'Suma totala'
+    ]],
     body: tableRows,
+    styles: { font: 'Roboto', fontSize: 10 },
     startY: 30,
   });
 

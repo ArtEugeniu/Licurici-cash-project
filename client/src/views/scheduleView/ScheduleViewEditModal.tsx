@@ -46,6 +46,8 @@ const ScheduleViewEditModal: React.FC<ScheduleViewEditModalProps> = ({ selectedS
     fetchSpectaclesList();
   }, []);
 
+  
+
   return (
     <div className='editModal'>
       <h2 className="editModal__title">Editeaza</h2>

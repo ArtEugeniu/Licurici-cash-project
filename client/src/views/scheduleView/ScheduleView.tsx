@@ -11,6 +11,17 @@ type ScheduleDataType = {
   id: string
 }
 
+type Sale = {
+  id: string;
+  quantity: number;
+  total_sum: number;
+  payment_method: string;
+  created_at: string;
+  type: string;
+  title: string;
+  schedule_id: string
+};
+
 
 const ScheduleView: React.FC = () => {
 
@@ -67,6 +78,7 @@ const ScheduleView: React.FC = () => {
 
     if (!confirm) return;
 
+
     try {
       const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
         method: 'PUT',
@@ -87,18 +99,37 @@ const ScheduleView: React.FC = () => {
   }
 
   const removeSpectacle = async (id: string) => {
+    
+    try {
+      const salesResponse = await fetch('http://localhost:5000/api/sales');
+      if (!salesResponse.ok) {
+        alert('Eroare la verificarea vanzarilor');
+        return;
+      }
 
-    const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
-    if (!confirmed) return;
+      const sales = await salesResponse.json();
 
-    const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
-      method: 'DELETE'
-    })
+      const findSale = sales.filter((item: Sale) => item.schedule_id === id);
 
-    if (response.ok) {
-      setScheduleData(prev => prev.filter(item => item.id !== id));
-    } else {
-      alert('Eroare la ștergere');
+      if (findSale.length > 0) {
+        alert('Nu puteți șterge spectacolul: există deja vânzări pentru acest spectacol.');
+        return;
+      }
+
+      const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
+      if (!confirmed) return;
+
+      const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
+        method: 'DELETE'
+      })
+
+      if (response.ok) {
+        setScheduleData(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('Eroare la ștergere');
+      }
+    } catch (error) {
+      alert('Eroare: ' + error)
     }
   }
 
