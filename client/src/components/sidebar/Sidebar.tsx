@@ -16,7 +16,8 @@ const Sidebar: React.FC<SidebarProps> = ({ activeTab, setActiveTab }) => {
   const sidebarItems: TabType[] = [
     { id: 'program', title: 'Program' },
     { id: 'spectacole', title: 'Spectacole' },
-    { id: 'rapoarte', title: 'Rapoarte' }
+    { id: 'rapoarte', title: 'Rapoarte Vanzari' },
+    { id: 'bilete', title: 'Rapoarte Bilete' }
   ];
 
   return (

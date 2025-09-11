@@ -50,11 +50,31 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
         alert(errorData.error);
         return
       }
+
+      const printResponse = await fetch('http://localhost:5000/api/print', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: selectedSpectacle.title,
+          date: selectedSpectacle.date,
+          time: selectedSpectacle.time,
+          price: `${totalPrice()} Lei`,
+          quantity: ticketNumber
+        })
+      });
+
+      if (!printResponse.ok) {
+        const errorData = await printResponse.json();
+        alert('Eroare la tipărirea biletelor: ' + errorData.error);
+      } else {
+        alert(`Succes la vanzarea a ${ticketNumber} ${ticketNumber === 1 ? 'bilet' : 'bilete'}: 
+          ${selectedSpectacle.title} ${selectedSpectacle.date.split('-').reverse().join('-')} ${selectedSpectacle.time} ${totalPrice()} de lei`)
+      }
+
       setShowModal(false);
     } catch (error) {
       alert('Eroare la vanzare: ' + error)
     }
-
   }
 
 

@@ -91,12 +91,12 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   const filteredSales = sales.filter(sale => {
     const schedule = scheduleList.find(id => id.id === sale.schedule_id);
 
-    if(!schedule) return false;
+    if (!schedule) return false;
 
     if (selectedSpectacle === 'toate spectacolele') {
-    return schedule.date >= selectedDate && schedule.date <= dateTo;
-  }
-      
+      return schedule.date >= selectedDate && schedule.date <= dateTo;
+    }
+
 
     return (
       schedule.title.toLowerCase() === selectedSpectacle.toLowerCase() &&
@@ -123,7 +123,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
 
     if (!acc[key]) {
       acc[key] = {
-        title: sale.title,
+        title: spectacle.title,
         card_method: 0,
         card_sum: 0,
         cash_method: 0,
@@ -203,13 +203,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
       <h2 className="spectacle__title">
         Rapoarte dupa Spectacol
       </h2>
-      <label className='spectacle__label spectacle__label-from' htmlFor="spectacle-date">Selectati data:
-        <input className='spectacle__date' type="date" id='spectacle-date' value={selectedDate} onChange={(e) => setDateFrom(e.target.value)} />
-      </label>
-      <label className='spectacle__label spectacle__label-to' htmlFor="spectacle-date">Selectati data:
-        <input className='spectacle__date' type="date" id='spectacle-date' value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-      </label>
-      <select name="" id="" value={selectedSpectacle} onChange={(e) => setSelectedSpectacle(e.target.value)}>
+      <select className="spectacle__select" name="" id="" value={selectedSpectacle} onChange={(e) => setSelectedSpectacle(e.target.value)}>
         {
           spectaclesList.map(item => {
             return (
@@ -218,6 +212,13 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
           })
         }
       </select>
+      <label className='spectacle__label spectacle__label-from' htmlFor="spectacle-date">Data de la:
+        <input className='spectacle__date' type="date" id='spectacle-date' value={selectedDate} onChange={(e) => setDateFrom(e.target.value)} />
+      </label>
+      <label className='spectacle__label spectacle__label-to' htmlFor="spectacle-date">Data pana la:
+        <input className='spectacle__date' type="date" id='spectacle-date' value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+      </label>
+
       {spectacleTitle !== '' ? (
 
         <>
@@ -276,7 +277,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
           </div>
         </>
       ) : (
-        <h3>Nu exista spectacol pe data de {selectedDate}</h3>
+        <h3>Nu au fost gasite spectacole pentru perioada {selectedDate.split('-').reverse().join('-')} - {dateTo.split('-').reverse().join('-')}</h3>
       )}
     </div>
   )

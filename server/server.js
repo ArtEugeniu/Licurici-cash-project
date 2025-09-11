@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import sqlite3 from 'sqlite3';
 import { open } from 'sqlite';
+import { printTicketDPL } from './printer.js';
 
 const db = await open({
   filename: './db/tickets.db',
@@ -151,6 +152,65 @@ app.post('/api/sales', async (req, res) => {
     console.error('Ошибка при добавлении продажи:', error);
     res.status(500).json({ error: 'Eroare la adaugarea vanzarii' });
   }
+});
+
+app.get("/api/print", async (req, res) => {
+  try {
+    console.log("Данные для печати:", req.body);
+
+    res.json({ status: "ok", message: "Server print work" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Server print Error" });
+  }
+});
+
+app.get('/api/tickets_in', async (req, res) => {
+  try {
+    const tickets = await db.all('SELECT * FROM tickets_in ORDER BY created_at DESC');
+    res.json(tickets); 
+  } catch (error) {
+    console.error('Eroare la preluarea biletelor:', error);
+    res.status(500).json({ error: 'Eroare la preluarea biletelor' });
+  }
+});
+
+app.post("/api/tickets_in", async (req, res) => {
+  const { firstSerial, lastSerial, ticketsNumber, id } = req.body;
+
+  try {
+
+    await db.run(
+      `INSERT INTO tickets_in (id, number_from, number_to, total_tickets) VALUES (?, ?, ?, ?)`,
+      [id, firstSerial, lastSerial, ticketsNumber]
+    );
+
+    res.status(201).json({ succes: true });
+  } catch (error) {
+    console.error('Erorare la adaugarea biletelor: ', error);
+    res.status(500).json({ error: 'Eroare la adaugarea biletelor' })
+  }
+});
+
+app.post("/api/print", async (req, res) => {
+  try {
+    const ticketData = req.body;
+
+    await printTicketDPL(ticketData);
+
+    res.json({ status: "ok", message: "Bilet transmis la imprimare" });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ status: "error", message: "Eraore la imprimare" });
+  }
+
+  //   try {
+  //   console.log("Данные для печати:", req.body); 
+  //   res.json({ status: "ok", message: "Билет отправлен на печать (заглушка)" });
+  // } catch (err) {
+  //   console.error(err);
+  //   res.status(500).json({ status: "error", message: "Ошибка сервера печати" });
+  // }
 });
 
 

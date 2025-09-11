@@ -72,6 +72,10 @@ const ScheduleView: React.FC = () => {
 
   }, []);
 
+  useEffect(() => {
+    console.log(scheduleData)
+  }, [scheduleData])  
+
   const editSpectacle = async (title: string, id: string, type: string) => {
 
     const confirm = window.confirm('Sunteti sigur ca doriti sa editati acest spectacol?');

@@ -18,7 +18,7 @@ interface DailyReportsProps {
 };
 
 const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
-  
+
 
   const getTodayDate = (): string => {
     const today = new Date();
@@ -36,7 +36,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
     const formatedDate = salesDate.toISOString().slice(0, 10);
     return formatedDate === selectedDate;
   });
-  
+
 
   const cashSales = filteredSales.filter(sale => sale.payment_method === 'cash');
   const cardSales = filteredSales.filter(sale => sale.payment_method === 'card');
@@ -69,28 +69,30 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
           onChange={(e) => setSelectedDate(e.target.value)}
         />
       </label>
-      <table className="daily__table">
-        <thead>
-          <tr>
-            <th>Data</th>
-            <th>Spectacol</th>
-            <th>Bilete</th>
-            <th>Suma</th>
-            <th>Metodă plată</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredSales.map((sale) => (
-            <tr key={sale.id}>
-              <td>{new Date(sale.created_at).toLocaleDateString()}</td>
-              <td>{sale.title}</td>
-              <td>{sale.quantity}</td>
-              <td>{sale.total_sum} MDL</td>
-              <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>
+      <div className="daily__table-wrapper">
+        <table className="daily__table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Spectacol</th>
+              <th>Bilete</th>
+              <th>Suma</th>
+              <th>Metodă plată</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredSales.map((sale) => (
+              <tr key={sale.id}>
+                <td>{new Date(sale.created_at).toLocaleDateString()}</td>
+                <td>{sale.title}</td>
+                <td>{sale.quantity}</td>
+                <td>{sale.total_sum} MDL</td>
+                <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
       <div className="daily__summary">
         <h3>Sumar:</h3>
         <p><strong>Numerar:</strong> {totalCashTickets} bilete — {totalCashAmount} MDL</p>

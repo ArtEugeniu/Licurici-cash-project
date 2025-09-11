@@ -4,6 +4,7 @@ import Sidebar from '../sidebar/Sidebar';
 import ScheduleView from '../../views/scheduleView/ScheduleView';
 import SpectaclesView from '../../views/spectaclesView/SpectaclesView';
 import ReportsView from '../../views/reportsView/ReportsView';
+import TicketsView from '../../views/ticketsView/TicketsView';
 
 interface DashboardLayoutProps {
   activeTab: string;
@@ -20,6 +21,8 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, setActiveT
         return <SpectaclesView />;
       case 'rapoarte':
         return <ReportsView />;
+        case 'bilete':
+        return <TicketsView />;
       default:
         return <ScheduleView />
     }

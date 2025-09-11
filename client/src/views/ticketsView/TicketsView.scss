@@ -1,0 +1,77 @@
+.tickets {
+  width: 100%;
+  padding: 0 25px;
+
+  &__title {
+    font-size: 40px;
+    text-align: center;
+    padding: 25px 0;
+    margin-bottom: 50px;
+  }
+
+  &__entry-title {
+    font-size: 20px;
+  }
+
+  &__entry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    margin-bottom: 30px;
+  }
+
+  &__entry-form label {
+    font-size: 18px;
+  }
+
+  &__entry-form input {
+    background-color: #cbcbcb;
+    padding: 5px;
+    border-radius: 10px;
+  }
+
+  &__entry-button {
+    max-width: 200px;
+    background-color: #5300ff;
+    padding: 10px;
+    font-size: 20px;
+    color: #fff;
+    border-radius: 10px;
+    transition: opacity 0.3s;
+
+    &:hover {
+      opacity: 0.8;
+    }
+
+    &:active {
+      opacity: 0.5;
+    }
+  }
+
+  &__entry-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
+    border-radius: 8px;
+    max-height: 600px;
+    overflow: hidden;
+
+    th,
+    td {
+      padding: 12px 16px;
+      text-align: center;
+    }
+
+    thead {
+      background-color: #5300ff;
+      color: #fff;
+    }
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: #c2c2c2;
+  }
+
+}
