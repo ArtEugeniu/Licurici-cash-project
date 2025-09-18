@@ -5,4 +5,4 @@ client/.env
 server/.env
 
 client/build/
-server/dist/
+server/dist/server/db/tickets.db
