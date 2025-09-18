@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { v4 as uuid } from 'uuid';
 import './TicketsView.scss';
+import TicketsReport from './ticketsReport/TicketsReport';
 
 interface TicketEntry {
   id: string;
@@ -31,50 +31,70 @@ const TicketsView: React.FC = () => {
     }
   }, [ticketsNumber, firstSerial]);
 
-
-  const addSerial = async (e: React.FormEvent) => {
-
-    e.preventDefault();
-
-    const confirmAdd = window.confirm(
-      `Sigur doriți să adăugați biletele cu serii ${firstSerial} - ${lastSerial}?`
-    );
-
-    if (!confirmAdd) return;
-    const id: string = uuid();
-
-    const response = await fetch('http://localhost:5000/api/tickets_in', {
-      method: 'POST',
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ firstSerial, lastSerial, ticketsNumber, id })
-    })
-
-    const data = await response.json();
-    if (response.ok) {
-      alert(`Biletele adaugate cu succes!`);
-    } else {
-      alert(`Eroare: ${data.error}`);
-    }
-
-    setFirstSerial('0');
-    setLastSerial('0')
-  }
-
   const fetchTicketsIn = async () => {
     try {
       const response = await fetch('http://localhost:5000/api/tickets_in');
       const data = await response.json();
       setTicketInList(data);
-      console.log(data)
     } catch (error) {
       console.error('Eroare la preluarea biletelor:', error);
     }
   }
 
+
+  const addSerial = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (ticketsNumber === '0') {
+      alert('Selectati numarul de bilete primite');
+      return
+    }
+
+    const confirmAdd = window.confirm(
+      `Sigur doriți să adăugați biletele cu serii ${firstSerial} - ${lastSerial}?`
+    );
+    if (!confirmAdd) return;
+
+    try {
+
+      const response = await fetch('http://localhost:5000/api/tickets_in', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ firstSerial, lastSerial, ticketsNumber })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        return alert(`Eroare: ${data.error}`);
+      }
+
+      const serialResp = await fetch('http://localhost:5000/api/ticket_serial', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+
+      if (!serialResp.ok) {
+        const serialData = await serialResp.json();
+        return alert(`Eroare la ticket_serial: ${serialData.error}`);
+      }
+
+      alert('Biletele si ticket_serial adaugate cu succes!');
+      fetchTicketsIn();
+      setFirstSerial('0');
+      setLastSerial('0');
+      setTicketsNumber('0');
+
+    } catch (err) {
+      alert(err);
+    }
+  };
+
+
+
   useEffect(() => {
     fetchTicketsIn();
-
-  }, [lastSerial]);
+  }, []);
 
 
 
@@ -160,6 +180,8 @@ const TicketsView: React.FC = () => {
           </tbody>
         </table>
       </div>
+
+      <TicketsReport />
 
     </div>
   )

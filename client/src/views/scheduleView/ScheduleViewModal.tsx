@@ -28,6 +28,11 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
       return
     }
 
+    const confirmed = window.confirm("Sigur vrei să finalizezi vânzarea?");
+  if (!confirmed) {
+    return; 
+  }
+
     const randomId = uuid();
 
     try {
@@ -65,7 +70,7 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
 
       if (!printResponse.ok) {
         const errorData = await printResponse.json();
-        alert('Eroare la tipărirea biletelor: ' + errorData.error);
+        // alert('Eroare la tipărirea biletelor: ' + errorData.error);
       } else {
         alert(`Succes la vanzarea a ${ticketNumber} ${ticketNumber === 1 ? 'bilet' : 'bilete'}: 
           ${selectedSpectacle.title} ${selectedSpectacle.date.split('-').reverse().join('-')} ${selectedSpectacle.time} ${totalPrice()} de lei`)

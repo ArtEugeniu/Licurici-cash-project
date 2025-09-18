@@ -18,6 +18,7 @@
   &__table-wrapper {
     max-height: 432px;
     overflow: auto;
+    border-radius: 8px;
   }
 
   &__table {
@@ -26,14 +27,20 @@
     font-size: 16px;
     background-color: #fff;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
     max-height: 600px;
-    overflow: hidden;
 
     th,
     td {
       padding: 12px 16px;
       text-align: center;
+    }
+
+    th {
+    position: sticky;
+    top: 0;
+    background-color: #5300ff; /* важно для перекрытия */
+    color: #fff;
+    z-index: 2; /* чтобы быть поверх td */
     }
 
     thead {
