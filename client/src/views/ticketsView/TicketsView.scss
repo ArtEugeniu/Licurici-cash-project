@@ -10,7 +10,7 @@
   }
 
   &__entry-title {
-    font-size: 20px;
+    font-size: 24px;
   }
 
   &__entry-form {
@@ -72,6 +72,10 @@
 
   tbody tr:nth-child(even) {
     background-color: #c2c2c2;
+  }
+
+  &__entry-report {
+    margin-bottom: 80px;
   }
 
 }
