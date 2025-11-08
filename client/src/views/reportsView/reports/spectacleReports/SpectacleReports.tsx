@@ -186,6 +186,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
 
     const data: SpectacleReportData = {
       selectedDate,
+      dateTo,
       spectacleTitle,
       totalCashTickets,
       totalCardTickets,

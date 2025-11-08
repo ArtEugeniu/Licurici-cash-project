@@ -37,6 +37,8 @@ const TicketsReport: React.FC = () => {
         return 100;
       case 'Premiera':
         return 150;
+      case 'Special':
+        return 200;
     }
   }
 

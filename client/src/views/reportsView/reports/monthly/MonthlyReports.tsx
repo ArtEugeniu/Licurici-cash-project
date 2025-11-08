@@ -41,9 +41,11 @@ const MonthlyReports: React.FC<MonthlyReportsProps> = ({ sales }) => {
 
  const premieraSales = filteredSales.filter(item => item.type === 'Premiera');
   const standartSales = filteredSales.filter(item => item.type === 'Standart');
+  const specialSales = filteredSales.filter(item => item.type === 'Special');
 
   const premieraTickets = premieraSales.reduce((sum, s) => sum + s.quantity, 0);
   const standartTickets = standartSales.reduce((sum, s) => sum + s.quantity, 0);
+  const specialTickets = specialSales.reduce((sum, s) => sum + s.quantity, 0);
 
   const totalCashTickets = cashSales.reduce((total, tickets) => total + tickets.quantity, 0);
   const totalCardTickets = cardSales.reduce((total, tickets) => total + tickets.quantity, 0);
@@ -64,6 +66,7 @@ const MonthlyReports: React.FC<MonthlyReportsProps> = ({ sales }) => {
     totalCardAmount,
     premieraTickets,
     standartTickets,
+    specialTickets,
     totalTickets,
     totalAmount,
   };
@@ -87,6 +90,7 @@ const MonthlyReports: React.FC<MonthlyReportsProps> = ({ sales }) => {
             <th>Suma bilete card</th>
             <th>Nr bilete 100 lei</th>
             <th>Nr bilete 150 lei</th>
+            <th>Nr bilete 200 lei</th>
             <th>Nr. bilete total</th>
             <th>Suma bilete total</th>
           </tr>
@@ -100,6 +104,7 @@ const MonthlyReports: React.FC<MonthlyReportsProps> = ({ sales }) => {
             <td>{totalCardAmount}</td>
             <td>{standartTickets}</td>
             <td>{premieraTickets}</td>
+            <td>{specialTickets}</td>
             <td>{totalTickets}</td>
             <td>{totalAmount}</td>
           </tr>

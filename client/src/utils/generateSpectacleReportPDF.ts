@@ -30,6 +30,7 @@ type Sale = {
 
 export type SpectacleReportData = {
   selectedDate: string;
+  dateTo: string;
   spectacleTitle: string;
   filteredSales: Sale[];
   totalCashTickets: number;
@@ -53,6 +54,7 @@ export type SpectacleReportData = {
 export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
   const {
     selectedDate,
+    dateTo,
     spectacleTitle,
     totalCashTickets,
     totalCardTickets,
@@ -71,12 +73,12 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
 
   doc.setFont('Roboto');
   doc.setFontSize(16);
-  doc.text(`Raport pentru spectacol — ${spectacleTitle}`, 14, 15);
-  doc.text(`Perioada: ${selectedDate}`, 14, 23);
+  doc.text(`Raport pentru spectacole`, 14, 15);
+  doc.text(`Perioada: ${selectedDate.split('-').reverse().join('.')} - ${dateTo.split('-').reverse().join('.')}`, 14, 23);
 
   // Подготовка данных для таблицы из groupedData
   const tableRows = groupedData.map(item => [
-    item.date.split('-').reverse().join('-'), // Дата в формате дд-мм-гггг
+    item.date.split('-').reverse().join('-'), 
     item.title,
     item.cash_method.toString(),
     `${item.cash_sum} MDL`,
@@ -119,5 +121,5 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
     doc.text(line, 14, summaryStartY + 8 + i * 7);
   });
 
-  doc.save(`raport_spectacol_${spectacleTitle.replace(/\s+/g, '_').toLowerCase()}_${selectedDate}.pdf`);
+  doc.save(`raport_spectacole_${selectedDate.split('-').reverse().join('.')}-${dateTo.split('-').reverse().join('.')}.pdf`);
 };

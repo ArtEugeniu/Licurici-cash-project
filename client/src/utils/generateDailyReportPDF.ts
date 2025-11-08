@@ -37,6 +37,7 @@ export type DailyReportData = {
   totalCardAmount: number;
   premieraTickets: number;
   standartTickets: number;
+  specialTickets: number;
   totalTickets: number;
   totalAmount: number;
 };
@@ -81,6 +82,7 @@ export const generateDailyReportPDF = (data: DailyReportData) => {
     `Card: ${data.totalCardTickets} bilete — ${data.totalCardAmount} MDL`,
     `Bilete 100 lei: ${data.standartTickets} bilete — ${data.standartTickets * 100} MDL`,
     `Bilete 150 lei: ${data.premieraTickets} bilete — ${data.premieraTickets * 150} MDL`,
+    `Bilete 200 lei: ${data.specialTickets} bilete — ${data.specialTickets * 200} MDL`,
     `Total: ${data.totalTickets} bilete — ${data.totalAmount} MDL`,
   ];
 

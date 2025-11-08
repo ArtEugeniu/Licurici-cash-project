@@ -1,28 +1,21 @@
 import express from 'express';
-import { printTicketDPL } from '../printer/printer.js';
+import { printTicket } from '../ticketPrinter.js'; 
 
 export const routerPrint = express.Router();
 
-routerPrint.get("/", async (req, res) => {
-  try {
-    console.log("Данные для печати:", req.body);
+routerPrint.use(express.json());  
 
-    res.json({ status: "ok", message: "Server print work" });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error", message: "Server print Error" });
-  }
-});
-
-routerPrint.post("/", async (req, res) => {
+routerPrint.post('/', async (req, res) => {
   try {
     const ticketData = req.body;
 
-    await printTicketDPL(ticketData);
+    console.log('Данные для печати:', ticketData);
 
-    res.json({ status: "ok", message: "Bilet transmis la imprimare" });
+    await printTicket(ticketData);
+
+    res.json({ status: 'ok', message: 'Билет отправлен на печать' });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ status: "error", message: "Eraore la imprimare" });
+    console.error('Ошибка при печати:', err);
+    res.status(500).json({ status: 'error', message: 'Ошибка печати' });
   }
 });

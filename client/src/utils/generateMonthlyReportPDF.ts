@@ -37,6 +37,7 @@ export type MonthlyReportData = {
   totalCardAmount: number;
   premieraTickets: number;
   standartTickets: number;
+  specialTickets: number;
   totalTickets: number;
   totalAmount: number;
 };
@@ -50,6 +51,7 @@ export const generateMonthlyReportPDF = (data: MonthlyReportData) => {
     totalCardTickets,
     totalCardAmount,
     premieraTickets,
+      specialTickets,
     standartTickets,
     totalTickets,
     totalAmount,
@@ -99,6 +101,7 @@ export const generateMonthlyReportPDF = (data: MonthlyReportData) => {
     `Card: ${totalCardTickets} bilete — ${totalCardAmount} MDL`,
     `Bilete 100 lei: ${standartTickets} bilete — ${standartTickets * 100} MDL`,
     `Bilete 150 lei: ${premieraTickets} bilete — ${premieraTickets * 150} MDL`,
+    `Bilete 200 lei: ${specialTickets} bilete — ${specialTickets * 200} MDL`,
     `Total: ${totalTickets} bilete — ${totalAmount} MDL`,
   ];
 

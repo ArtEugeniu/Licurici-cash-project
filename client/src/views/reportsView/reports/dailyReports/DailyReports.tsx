@@ -43,9 +43,11 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
 
   const premieraSales = filteredSales.filter(item => item.type === 'Premiera');
   const standartSales = filteredSales.filter(item => item.type === 'Standart');
+  const specialSales = filteredSales.filter(item => item.type === 'Special');
 
   const premieraTickets = premieraSales.reduce((sum, s) => sum + s.quantity, 0);
   const standartTickets = standartSales.reduce((sum, s) => sum + s.quantity, 0);
+  const specialTickets = specialSales.reduce((sum, s) => sum + s.quantity, 0);
 
   const totalCashTickets = cashSales.reduce((sum, s) => sum + s.quantity, 0);
   const totalCashAmount = cashSales.reduce((sum, s) => sum + s.total_sum, 0);
@@ -98,7 +100,8 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
         <p><strong>Numerar:</strong> {totalCashTickets} bilete — {totalCashAmount} MDL</p>
         <p><strong>Card:</strong> {totalCardTickets} bilete — {totalCardAmount} MDL</p>
         <p><strong>Bilete 100 lei:</strong> {standartTickets} bilete — {standartTickets * 100} MDL</p>
-        <p><strong>bilete 150 lei:</strong> {premieraTickets} bilete — {premieraTickets * 150} MDL</p>
+        <p><strong>Bilete 150 lei:</strong> {premieraTickets} bilete — {premieraTickets * 150} MDL</p>
+        <p><strong>Bilete 200 lei:</strong> {specialTickets} bilete — {specialTickets * 200} MDL</p>
         <p><strong>Total:</strong> {totalTickets} bilete — {totalAmount} MDL</p>
         <button
           className="daily__pdf-button"
@@ -112,6 +115,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
               totalCardAmount,
               premieraTickets,
               standartTickets,
+              specialTickets,
               totalTickets,
               totalAmount
             };

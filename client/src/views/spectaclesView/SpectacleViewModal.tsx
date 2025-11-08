@@ -25,6 +25,7 @@ const SpectaclesViewModal: React.FC<SpectaclesViewModalProps> = ({ onCancel, onA
         <select className='modal__select' value={type} onChange={(e) => setType(e.target.value)}>
           <option value="Standart">Standart</option>
           <option value="Premiera">Premieră</option>
+          <option value="Special">Special</option>
         </select>
         <div className='modal__buttons'>
           <button onClick={onAccept}>Salvează</button>

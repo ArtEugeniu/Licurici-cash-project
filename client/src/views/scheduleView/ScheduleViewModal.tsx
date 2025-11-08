@@ -61,16 +61,16 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title: selectedSpectacle.title,
-          date: selectedSpectacle.date,
+          date: selectedSpectacle.date.split('-').reverse().join('.'),
           time: selectedSpectacle.time,
-          price: `${totalPrice()} Lei`,
+          price: `${totalPrice() / ticketNumber} `,
           quantity: ticketNumber
         })
       });
 
       if (!printResponse.ok) {
         const errorData = await printResponse.json();
-        // alert('Eroare la tipărirea biletelor: ' + errorData.error);
+        alert('Eroare la tipărirea biletelor: ' + errorData.error);
       } else {
         alert(`Succes la vanzarea a ${ticketNumber} ${ticketNumber === 1 ? 'bilet' : 'bilete'}: 
           ${selectedSpectacle.title} ${selectedSpectacle.date.split('-').reverse().join('-')} ${selectedSpectacle.time} ${totalPrice()} de lei`)
@@ -85,7 +85,9 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({ selectedSpectacle
 
   const totalPrice = (): number => {
     if (selectedSpectacle.type === 'Standart') return 100 * ticketNumber;
-    else return 150 * ticketNumber
+    else if (selectedSpectacle.type === 'Premiera') return 150 * ticketNumber;
+    else if (selectedSpectacle.type === 'Special') return 200 * ticketNumber;
+    else return 100 * ticketNumber;
   }
 
 
