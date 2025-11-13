@@ -8,6 +8,7 @@ import { routerPrint } from './routes/print.js';
 import { routerTicketsIn } from './routes/tickets_in.js';
 import { routerTicketSerial } from './routes/ticket_serial.js';
 import { routerTicketsReport } from './routes/ticketsReport.js';
+import { routerReports } from './routes/reports.js';
 
 const app = express();
 app.use(cors());
@@ -23,5 +24,6 @@ app.use('/api/print', routerPrint);
 app.use('/api/tickets_in', routerTicketsIn);
 app.use('/api/ticket_serial', routerTicketSerial);
 app.use('/api/ticketsReport', routerTicketsReport);
+app.use('/api/reports', routerReports);
 
 app.listen(5000, () => console.log('Server running on http://localhost:5000'));

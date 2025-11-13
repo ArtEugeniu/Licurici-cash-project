@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import './TicketsView.scss';
 import TicketsReport from './ticketsReport/TicketsReport';
+import { generateTicketsPeriodReportPDF } from '../../utils/generateTicketsPeriodReportPDF';
 
 interface TicketEntry {
   id: string;
@@ -16,6 +17,14 @@ const TicketsView: React.FC = () => {
   const [firstSerial, setFirstSerial] = useState<string>('0');
   const [lastSerial, setLastSerial] = useState<string>('0');
   const [ticketsInList, setTicketInList] = useState<TicketEntry[]>([]);
+  const [dateFrom, setDateFrom] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
+  const [dateTo, setDateTo] = useState<string>(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
 
   useEffect(() => {
 
@@ -179,6 +188,38 @@ const TicketsView: React.FC = () => {
 
           </tbody>
         </table>
+      </div>
+
+      <div className="tickets__report-period">
+        <h3>Raport pe perioada</h3>
+        <div className="period__dates">
+          <label>
+            De la: <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+          </label>
+          <label>
+            Pana la: <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+          </label>
+        </div>
+        <div className="period__actions">
+          <button
+            className="period__pdf-button"
+            onClick={async () => {
+              try {
+                const res = await fetch(`http://localhost:5000/api/reports/tickets_period?startDate=${dateFrom}&endDate=${dateTo}`);
+                if (!res.ok) {
+                  const err = await res.json();
+                  alert(err.error || 'Eroare la generarea raportului');
+                  return;
+                }
+
+                const data = await res.json();
+                generateTicketsPeriodReportPDF(data);
+              } catch (error) {
+                alert('Eroare la descărcarea raportului: ' + error);
+              }
+            }}
+          >Descarca PDF</button>
+        </div>
       </div>
 
       <TicketsReport />
