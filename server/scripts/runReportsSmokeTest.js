@@ -8,17 +8,16 @@ async function run() {
   const end = '2025-12-31';
   try {
     const r = await generateTicketsPeriodReport(db, start, end);
-
+    // Check totals consistency: remaining = received_total - sold_total
     const expectedRemaining = r.totals.received_total - r.totals.sold_total;
     if (r.totals.remaining_on_box !== expectedRemaining) {
       throw new Error(`remaining_on_box mismatch: got ${r.totals.remaining_on_box}, expected ${expectedRemaining}`);
     }
 
-    for (const d of r.dailyRows) {
-      const sumParts = (d.sold_100_cash || 0) + (d.sold_100_card || 0) + (d.sold_150_cash || 0) + (d.sold_150_card || 0) + (d.sold_200_cash || 0) + (d.sold_200_card || 0);
-      if (d.sold_total !== sumParts) {
-        throw new Error(`sold_total mismatch on ${d.date}: got ${d.sold_total}, sumParts ${sumParts}`);
-      }
+    // Check that dailyRows sum up to received_total
+    const sumReceived = r.dailyRows.reduce((s, d) => s + (d.tickets_received || 0), 0);
+    if (sumReceived !== r.totals.received_total) {
+      throw new Error(`received_total mismatch: rows sum ${sumReceived} vs totals.received_total ${r.totals.received_total}`);
     }
 
     console.log('SMOKE TEST PASS');

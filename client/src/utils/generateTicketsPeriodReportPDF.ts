@@ -66,19 +66,11 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   const tableRows = dailyRows.map(r => [
     r.date.split('-').reverse().join('-'),
     String(r.tickets_received),
-    String(r.sold_100_cash),
-    String(r.sold_100_card),
-    String(r.sold_150_cash),
-    String(r.sold_150_card),
-    String(r.sold_200_cash),
-    String(r.sold_200_card),
-    String(r.sold_total),
-    `${r.amount_total} MDL`
   ]);
 
   autoTable(doc, {
     head: [[
-      'Data', 'Primite', '100 numerar', '100 card', '150 numerar', '150 card', '200 numerar', '200 card', 'Total bilete', 'Suma'
+      'Data', 'Primite'
     ]],
     body: tableRows,
     styles: { font: 'Roboto' },
