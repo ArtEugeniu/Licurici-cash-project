@@ -57,6 +57,12 @@ type TicketsPeriodReportData = {
 
 export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) => {
   const { startDate, endDate, dailyRows, totals, meta } = data as any;
+  const fmtDate = (s?: string) => {
+    if (!s) return '';
+    const parts = String(s).split('-');
+    if (parts.length >= 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
+    return s;
+  };
   const doc = new jsPDF();
 
   doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegularBase64);
@@ -66,7 +72,7 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   doc.setFont('Roboto');
 
   doc.setFontSize(16);
-  doc.text(`Raport bilete — ${startDate} - ${endDate}`, 14, 15);
+  doc.text(`Raport bilete — ${fmtDate(startDate)} - ${fmtDate(endDate)}`, 14, 15);
 
   // First table: sold from previous stock + ticket receipts by date + sold total for period row
   const firstTableRows: string[][] = [];
@@ -76,7 +82,9 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   }
 
   for (const r of dailyRows) {
-    firstTableRows.push([ r.date.split('-').reverse().join('-'), String(r.tickets_received) ]);
+    // r.date expected as YYYY-MM-DD
+    const d = r.date ? r.date.split('-').reverse().join('-') : '';
+    firstTableRows.push([ d, String(r.tickets_received) ]);
   }
 
   // Add total tickets available at box-office during period row
@@ -122,7 +130,7 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
     doc.text(line, 14, summaryStartY2 + i * 7);
   });
 
-  doc.save(`raport_bilete_${startDate}_to_${endDate}.pdf`);
+  doc.save(`raport_bilete_${fmtDate(startDate)}_to_${fmtDate(endDate)}.pdf`);
 };
 
 export default generateTicketsPeriodReportPDF;
