@@ -50,28 +50,6 @@ const TicketsView: React.FC = () => {
     }
   }
 
-  // Report preview state
-  const [reportData, setReportData] = useState<any | null>(null);
-
-  const fetchPeriodReport = async (from: string, to: string) => {
-    try {
-      const res = await fetch(`http://localhost:5000/api/reports/tickets_period?startDate=${from}&endDate=${to}`);
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || 'Eroare la preluarea raportului');
-        return null;
-      }
-
-      const data = await res.json();
-      setReportData(data);
-      return data;
-    } catch (err) {
-      console.error('Error fetching period report', err);
-      alert('Eroare la preluarea raportului');
-      return null;
-    }
-  }
-
 
   const addSerial = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -224,28 +202,17 @@ const TicketsView: React.FC = () => {
         </div>
         <div className="period__actions">
           <button
-            className="period__preview-button"
-            onClick={async () => {
-              await fetchPeriodReport(dateFrom, dateTo);
-            }}
-          >Arată raport</button>
-
-          <button
             className="period__pdf-button"
             onClick={async () => {
               try {
-                // If we already have the report data from preview, reuse it
-                let data = reportData;
-                if (!data) {
-                  const res = await fetch(`http://localhost:5000/api/reports/tickets_period?startDate=${dateFrom}&endDate=${dateTo}`);
-                  if (!res.ok) {
-                    const err = await res.json();
-                    alert(err.error || 'Eroare la generarea raportului');
-                    return;
-                  }
-                  data = await res.json();
+                const res = await fetch(`http://localhost:5000/api/reports/tickets_period?startDate=${dateFrom}&endDate=${dateTo}`);
+                if (!res.ok) {
+                  const err = await res.json();
+                  alert(err.error || 'Eroare la generarea raportului');
+                  return;
                 }
 
+                const data = await res.json();
                 generateTicketsPeriodReportPDF(data);
               } catch (error) {
                 alert('Eroare la descărcarea raportului: ' + error);
@@ -254,53 +221,6 @@ const TicketsView: React.FC = () => {
           >Descarca PDF</button>
         </div>
       </div>
-
-      {/* Preview table for the period report */}
-      {reportData && reportData.dailyRows && (
-        <div className="tickets__report-preview">
-          <h4>Preview raport (doar zile cu încasări)</h4>
-          <table className="tickets__report-preview-table">
-            <thead>
-              <tr>
-                <th>Data</th>
-                <th>Primite</th>
-                <th>100 numerar</th>
-                <th>100 card</th>
-                <th>150 numerar</th>
-                <th>150 card</th>
-                <th>200 numerar</th>
-                <th>200 card</th>
-                <th>Vandute</th>
-                <th>Suma</th>
-              </tr>
-            </thead>
-            <tbody>
-              {reportData.dailyRows.map((r: any) => (
-                <tr key={r.date}>
-                  <td>{r.date.split('-').reverse().join('-')}</td>
-                  <td>{r.tickets_received}</td>
-                  <td>{r.sold_100_cash}</td>
-                  <td>{r.sold_100_card}</td>
-                  <td>{r.sold_150_cash}</td>
-                  <td>{r.sold_150_card}</td>
-                  <td>{r.sold_200_cash}</td>
-                  <td>{r.sold_200_card}</td>
-                  <td>{r.sold_total}</td>
-                  <td>{r.amount_total} MDL</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-
-          <div className="tickets__report-preview-summary">
-            <p>Primite total: {reportData.totals.received_total}</p>
-            <p>Bilete vandute total: {reportData.totals.sold_total}</p>
-            <p>Suma totală: {reportData.totals.amount_total} MDL</p>
-            <p>Rămas la casă: {reportData.totals.remaining_on_box} bilete</p>
-          </div>
-        </div>
-      )}
-
       <TicketsReport />
 
     </div>
