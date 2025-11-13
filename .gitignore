@@ -6,3 +6,5 @@ server/.env
 
 client/build/
 server/dist/server/db/tickets.db
+
+node_modules/
