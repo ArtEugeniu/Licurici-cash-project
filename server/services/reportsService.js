@@ -25,6 +25,26 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
     [startDate, endDate]
   ) || {};
 
+  // compute beginning inventory (tickets available at startDate):
+  // total tickets_in before startDate minus total sales before startDate
+  const beforeTotals = await db.get(
+    `SELECT
+      IFNULL(SUM(total_tickets), 0) as tickets_in_before,
+      IFNULL(SUM(quantity), 0) as sold_before
+     FROM (
+       SELECT total_tickets, NULL as quantity, created_at FROM tickets_in WHERE date(created_at) < ?
+       UNION ALL
+       SELECT NULL as total_tickets, quantity, created_at FROM sales WHERE date(created_at) < ?
+     ) as combined`,
+    [startDate, startDate]
+  ) || { tickets_in_before: 0, sold_before: 0 };
+
+  const beginning_inventory = (beforeTotals.tickets_in_before || 0) - (beforeTotals.sold_before || 0);
+  // sold_from_prev = how many of this period's sales should be attributed to previous stock
+  const sold_from_prev = Math.min(beginning_inventory > 0 ? beginning_inventory : 0, totals.sold_total || 0);
+  const sold_from_new = (totals.sold_total || 0) - sold_from_prev;
+
+
   const dailyRows = [];
   const totals = {
     received_total: 0,
@@ -62,7 +82,14 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
 
   totals.remaining_on_box = totals.received_total - totals.sold_total;
 
-  return { startDate, endDate, dailyRows, totals, generated_at: new Date().toISOString() };
+  // Extra fields for the client report layout
+  const meta = {
+    beginning_inventory,
+    sold_from_prev,
+    sold_from_new,
+  };
+
+  return { startDate, endDate, dailyRows, totals, meta, generated_at: new Date().toISOString() };
 }
 
 export default generateTicketsPeriodReport;
