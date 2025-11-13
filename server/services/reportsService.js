@@ -1,10 +1,9 @@
 export async function generateTicketsPeriodReport(db, startDate, endDate) {
-  // tickets_in aggregation
+  // tickets_in entries (keep individual receipts with serials)
   const ticketsInRows = await db.all(
-    `SELECT date(created_at) as day, SUM(total_tickets) as tickets_received
+    `SELECT id, number_from, number_to, total_tickets as tickets_received, created_at
      FROM tickets_in
      WHERE date(created_at) BETWEEN ? AND ?
-     GROUP BY date(created_at)
      ORDER BY date(created_at) ASC`,
     [startDate, endDate]
   );
@@ -57,12 +56,16 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
   };
 
   for (const entry of ticketsInRows) {
-    const day = entry.day;
+    // entry.created_at like 'YYYY-MM-DD hh:mm:ss'
+    const day = String(entry.created_at).split(' ')[0];
     const received = entry.tickets_received || 0;
 
     dailyRows.push({
+      id: entry.id,
       date: day,
       tickets_received: received,
+      number_from: entry.number_from,
+      number_to: entry.number_to,
     });
 
     totals.received_total += received;

@@ -75,27 +75,27 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   doc.setFontSize(16);
   doc.text(`Raport bilete — ${fmtDate(startDate)} - ${fmtDate(endDate)}`, 14, 15);
 
-  // First table: sold from previous stock + ticket receipts by date + sold total for period row
+  // First table: beginning inventory + individual ticket receipts (with serials) + total at box in period
   const firstTableRows: string[][] = [];
   if (meta && (meta.beginning_inventory || meta.beginning_inventory === 0)) {
     // Romanian: "Stoc inițial" (остаток на начало периода)
-    firstTableRows.push([ 'Stoc inițial', String(meta.beginning_inventory) ]);
+    firstTableRows.push([ 'Stoc inițial', '', '', String(meta.beginning_inventory) ]);
   }
 
   for (const r of dailyRows) {
-    // r.date expected as YYYY-MM-DD
+    // r.date expected as YYYY-MM-DD; r.number_from/number_to may be strings
     const d = r.date ? r.date.split('-').reverse().join('-') : '';
-    firstTableRows.push([ d, String(r.tickets_received) ]);
+    firstTableRows.push([ d, String(r.number_from || ''), String(r.number_to || ''), String(r.tickets_received) ]);
   }
 
   // Add total tickets available at box-office during period row
   // Romanian: "Total la casă în perioadă" = beginning_inventory + received_total
   const beginning = (meta && meta.beginning_inventory) ? Number(meta.beginning_inventory) : 0;
   const totalAtBox = beginning + (totals.received_total || 0);
-  firstTableRows.push([ 'Total la casă în perioadă', String(totalAtBox) ]);
+  firstTableRows.push([ 'Total la casă în perioadă', '', '', String(totalAtBox) ]);
 
   autoTable(doc, {
-    head: [[ 'Data / Notă', 'Bilete' ]],
+    head: [[ 'Data', 'Seria de la', 'Seria pana la', 'Bilete' ]],
     body: firstTableRows,
     styles: { font: 'Roboto' },
     startY: 25,
