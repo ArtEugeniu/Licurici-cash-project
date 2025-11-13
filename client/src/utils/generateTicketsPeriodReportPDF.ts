@@ -70,9 +70,9 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
 
   // First table: sold from previous stock + ticket receipts by date + sold total for period row
   const firstTableRows: string[][] = [];
-  if (meta && (meta.sold_from_prev || meta.sold_from_prev === 0)) {
-    // Romanian: "Vândute din stocul anterior"
-    firstTableRows.push([ 'Vândute din stocul anterior', String(meta.sold_from_prev) ]);
+  if (meta && (meta.beginning_inventory || meta.beginning_inventory === 0)) {
+    // Romanian: "Stoc inițial" (остаток на начало периода)
+    firstTableRows.push([ 'Stoc inițial', String(meta.beginning_inventory) ]);
   }
 
   for (const r of dailyRows) {
