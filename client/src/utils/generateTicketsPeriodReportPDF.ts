@@ -71,18 +71,22 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   // First table: sold from previous stock + ticket receipts by date + sold total for period row
   const firstTableRows: string[][] = [];
   if (meta && (meta.sold_from_prev || meta.sold_from_prev === 0)) {
-    firstTableRows.push([ 'Sold from previous stock', String(meta.sold_from_prev) ]);
+    // Romanian: "Vândute din stocul anterior"
+    firstTableRows.push([ 'Vândute din stocul anterior', String(meta.sold_from_prev) ]);
   }
 
   for (const r of dailyRows) {
     firstTableRows.push([ r.date.split('-').reverse().join('-'), String(r.tickets_received) ]);
   }
 
-  // Add sold total for period row
-  firstTableRows.push([ 'Sold total for period', String(totals.sold_total) ]);
+  // Add total tickets available at box-office during period row
+  // Romanian: "Total la casă în perioadă" = beginning_inventory + received_total
+  const beginning = (meta && meta.beginning_inventory) ? Number(meta.beginning_inventory) : 0;
+  const totalAtBox = beginning + (totals.received_total || 0);
+  firstTableRows.push([ 'Total la casă în perioadă', String(totalAtBox) ]);
 
   autoTable(doc, {
-    head: [[ 'Data / Note', 'Bilete' ]],
+    head: [[ 'Data / Notă', 'Bilete' ]],
     body: firstTableRows,
     styles: { font: 'Roboto' },
     startY: 25,
@@ -108,10 +112,10 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
   const summaryStartY2 = (doc as any).lastAutoTable.finalY + 10;
   doc.setFontSize(12);
   const summaryLines = [
-    `Primite total: ${totals.received_total} bilete`,
-    `Total bilete vandute: ${totals.sold_total} bilete`,
-    `Suma totala: ${totals.amount_total} MDL`,
-    `Ramas la casa: ${totals.remaining_on_box} bilete`,
+    `Total primite: ${totals.received_total} bilete`,
+    `Total bilete vândute: ${totals.sold_total} bilete`,
+    `Suma totală: ${totals.amount_total} MDL`,
+    `Rămase la casă: ${totals.remaining_on_box} bilete`,
   ];
 
   summaryLines.forEach((line, i) => {
