@@ -63,7 +63,8 @@ export const generateTicketsPeriodReportPDF = (data: TicketsPeriodReportData) =>
     if (parts.length >= 3) return `${parts[2]}-${parts[1]}-${parts[0]}`;
     return s;
   };
-  const doc = new jsPDF();
+  // Create PDF in landscape (альбом) orientation
+  const doc = new jsPDF({ format: 'a4', orientation: 'landscape' });
 
   doc.addFileToVFS('Roboto-Regular.ttf', RobotoRegularBase64);
   doc.addFont('Roboto-Regular.ttf', 'Roboto', 'normal');
