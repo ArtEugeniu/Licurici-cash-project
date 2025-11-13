@@ -40,9 +40,7 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
   ) || { tickets_in_before: 0, sold_before: 0 };
 
   const beginning_inventory = (beforeTotals.tickets_in_before || 0) - (beforeTotals.sold_before || 0);
-  // sold_from_prev = how many of this period's sales should be attributed to previous stock
-  const sold_from_prev = Math.min(beginning_inventory > 0 ? beginning_inventory : 0, totals.sold_total || 0);
-  const sold_from_new = (totals.sold_total || 0) - sold_from_prev;
+  // sold_from_prev will be computed after we know salesTotals (use salesTotals.sold_total)
 
 
   const dailyRows = [];
@@ -80,9 +78,13 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
   totals.sold_total = salesTotals.sold_total || 0;
   totals.amount_total = salesTotals.amount_total || 0;
 
-  totals.remaining_on_box = totals.received_total - totals.sold_total;
+  // remaining on box should account for beginning inventory + received during period - sold during period
+  totals.remaining_on_box = (beginning_inventory || 0) + totals.received_total - totals.sold_total;
 
   // Extra fields for the client report layout
+  const sold_from_prev = Math.min(beginning_inventory > 0 ? beginning_inventory : 0, salesTotals.sold_total || 0);
+  const sold_from_new = (salesTotals.sold_total || 0) - sold_from_prev;
+
   const meta = {
     beginning_inventory,
     sold_from_prev,

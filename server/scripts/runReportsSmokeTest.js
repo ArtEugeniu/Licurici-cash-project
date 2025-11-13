@@ -8,8 +8,8 @@ async function run() {
   const end = '2025-12-31';
   try {
     const r = await generateTicketsPeriodReport(db, start, end);
-    // Check totals consistency: remaining = received_total - sold_total
-    const expectedRemaining = r.totals.received_total - r.totals.sold_total;
+    // Check totals consistency: remaining = beginning_inventory + received_total - sold_total
+    const expectedRemaining = (r.meta && r.meta.beginning_inventory ? r.meta.beginning_inventory : 0) + r.totals.received_total - r.totals.sold_total;
     if (r.totals.remaining_on_box !== expectedRemaining) {
       throw new Error(`remaining_on_box mismatch: got ${r.totals.remaining_on_box}, expected ${expectedRemaining}`);
     }
