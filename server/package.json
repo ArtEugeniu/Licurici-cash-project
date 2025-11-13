@@ -6,7 +6,10 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "dev": "nodemon server.js"
+  "dev": "nodemon server.js",
+  "reports:test": "node scripts/testReports.js"
+  ,
+  "reports:smoke": "node scripts/runReportsSmokeTest.js"
   },
   "keywords": [],
   "author": "",
