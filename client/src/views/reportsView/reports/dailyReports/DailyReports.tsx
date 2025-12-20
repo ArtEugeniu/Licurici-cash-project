@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { generateDailyReportPDF } from '../../../../utils/generateDailyReportPDF';
 import type { DailyReportData } from "../../../../utils/generateDailyReportPDF";
 import './DailyReports.scss';
@@ -10,7 +10,8 @@ type Sale = {
   payment_method: string;
   created_at: string;
   type: string;
-  title: string
+  title: string;
+  schedule_id: string
 };
 
 interface DailyReportsProps {
@@ -29,6 +30,30 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   };
 
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
+  const [schedulesMap, setSchedulesMap] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    // fetch schedules once and build a map schedule_id -> date (YYYY-MM-DD)
+    let mounted = true;
+    fetch('http://localhost:5000/api/schedule')
+      .then(res => res.json())
+      .then((rows: any[]) => {
+        if (!mounted) return;
+        const m: Record<string, string> = {};
+        for (const r of rows) {
+          if (r.id && r.date) {
+            const key = String(r.id).trim();
+            m[key] = String(r.date);
+          }
+        }
+        setSchedulesMap(m);
+      })
+      .catch(err => {
+        // ignore silently for now
+        console.error('Failed to fetch schedules', err);
+      });
+    return () => { mounted = false };
+  }, []);
 
   const filteredSales = sales.filter(item => {
     const salesDate = new Date(item.created_at.replace(' ', 'T'));
@@ -83,15 +108,24 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
             </tr>
           </thead>
           <tbody>
-            {filteredSales.map((sale) => (
-              <tr key={sale.id}>
-                <td>{new Date(sale.created_at).toLocaleDateString()}</td>
-                <td>{sale.title}</td>
-                <td>{sale.quantity}</td>
-                <td>{sale.total_sum} MDL</td>
-                <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>
-              </tr>
-            ))}
+            {filteredSales.map((sale) => {
+              const schedDate = schedulesMap[String(sale.schedule_id || '').trim()];
+              const fmtSched = (d?: string) => {
+                if (!d) return '';
+                const parts = String(d).split('-');
+                if (parts.length >= 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
+                return d;
+              };
+              return (
+                <tr key={sale.id}>
+                  <td>{new Date(sale.created_at).toLocaleDateString()}</td>
+                  <td>{sale.title}{schedDate ? ` (${fmtSched(schedDate)})` : ''}</td>
+                  <td>{sale.quantity}</td>
+                  <td>{sale.total_sum} MDL</td>
+                  <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>
+                </tr>
+              )
+            })}
           </tbody>
         </table>
       </div>
