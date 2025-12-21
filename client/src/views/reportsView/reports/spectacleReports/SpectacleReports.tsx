@@ -107,6 +107,8 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
 
   const groupedByDateAndTitle = filteredSales.reduce<Record<
     string, {
+      id: string,
+      date: string,
       title: string,
       card_method: number,
       card_sum: number,
@@ -119,10 +121,13 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
     const spectacle = scheduleList.find(presentation => presentation.id === sale.schedule_id);
     if (!spectacle) return acc;
 
-    const key = spectacle.date;
+    // group by schedule id so different shows on the same date are not merged
+    const key = spectacle.id;
 
     if (!acc[key]) {
       acc[key] = {
+        id: spectacle.id,
+        date: spectacle.date,
         title: spectacle.title,
         card_method: 0,
         card_sum: 0,
@@ -143,9 +148,12 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
     return acc;
   }, {})
 
-  const sortedEntries = Object.entries(groupedByDateAndTitle).sort(([dateA], [dateB]) => {
-    if (dateA < dateB) return -1;
-    if (dateA > dateB) return 1;
+  // Turn grouped object into an array and sort by date then title
+  const sortedEntries = Object.values(groupedByDateAndTitle).sort((a, b) => {
+    if (a.date < b.date) return -1;
+    if (a.date > b.date) return 1;
+    if (a.title < b.title) return -1;
+    if (a.title > b.title) return 1;
     return 0;
   });
 
@@ -177,10 +185,10 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   const totalTickets = filteredSales.reduce((sum, s) => sum + s.quantity, 0);
 
   const handleDownloadPDF = () => {
-    const sortedGroupedData = Object.entries(groupedByDateAndTitle)
-      .sort(([dateA], [dateB]) => (dateA < dateB ? -1 : dateA > dateB ? 1 : 0))
-      .map(([date, data]) => ({
-        date,
+    const sortedGroupedData = Object.values(groupedByDateAndTitle)
+      .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.title < b.title ? -1 : a.title > b.title ? 1 : 0))
+      .map((data) => ({
+        date: data.date,
         ...data
       }));
 
@@ -237,10 +245,10 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
               </tr>
             </thead>
             <tbody>
-              {sortedEntries.map(([date, data]) => {
+              {sortedEntries.map((data) => {
                 return (
-                  <tr key={date}>
-                    <td>{date.split('-').reverse().join('-')}</td>
+                  <tr key={data.id}>
+                    <td>{data.date.split('-').reverse().join('-')}</td>
                     <td>{data.title}</td>
                     <td>{data.cash_method}</td>
                     <td>{data.cash_sum}</td>
