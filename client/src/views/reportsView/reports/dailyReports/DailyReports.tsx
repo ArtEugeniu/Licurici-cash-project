@@ -30,7 +30,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   };
 
   const [selectedDate, setSelectedDate] = useState<string>(getTodayDate());
-  const [schedulesMap, setSchedulesMap] = useState<Record<string, string>>({});
+  const [schedulesMap, setSchedulesMap] = useState<Record<string, {date: string, time?: string}>>({});
 
   useEffect(() => {
     // fetch schedules once and build a map schedule_id -> date (YYYY-MM-DD)
@@ -39,11 +39,11 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
       .then(res => res.json())
       .then((rows: any[]) => {
         if (!mounted) return;
-        const m: Record<string, string> = {};
+        const m: Record<string, {date: string, time?: string}> = {};
         for (const r of rows) {
           if (r.id && r.date) {
             const key = String(r.id).trim();
-            m[key] = String(r.date);
+            m[key] = { date: String(r.date), time: r.time ? String(r.time) : undefined };
           }
         }
         setSchedulesMap(m);
@@ -109,17 +109,18 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
           </thead>
           <tbody>
             {filteredSales.map((sale) => {
-              const schedDate = schedulesMap[String(sale.schedule_id || '').trim()];
-              const fmtSched = (d?: string) => {
-                if (!d) return '';
-                const parts = String(d).split('-');
-                if (parts.length >= 3) return `${parts[2]}.${parts[1]}.${parts[0]}`;
-                return d;
+              const sched = schedulesMap[String(sale.schedule_id || '').trim()];
+              const fmtSched = (s?: {date: string, time?: string}) => {
+                if (!s || !s.date) return '';
+                const parts = String(s.date).split('-');
+                const datePart = parts.length >= 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : s.date;
+                const timePart = s.time ? ` ${String(s.time).split(':').slice(0,2).join(':')}` : '';
+                return `${datePart}${timePart}`;
               };
               return (
                 <tr key={sale.id}>
                   <td>{new Date(sale.created_at).toLocaleDateString()}</td>
-                  <td>{sale.title}{schedDate ? ` (${fmtSched(schedDate)})` : ''}</td>
+                  <td>{sale.title}{sched ? ` (${fmtSched(sched)})` : ''}</td>
                   <td>{sale.quantity}</td>
                   <td>{sale.total_sum} MDL</td>
                   <td>{sale.payment_method === 'cash' ? 'Numerar' : 'Card'}</td>

@@ -40,14 +40,15 @@ export type SpectacleReportData = {
   totalSum: number;
 
     groupedData: {
-    date: string;
-    title: string;
-    card_method: number;
-    card_sum: number;
-    cash_method: number;
-    cash_sum: number;
-    total_tickets: number;
-    total_sum: number;
+      date: string;
+      time?: string;
+      title: string;
+      card_method: number;
+      card_sum: number;
+      cash_method: number;
+      cash_sum: number;
+      total_tickets: number;
+      total_sum: number;
   }[];
 };
 
@@ -78,7 +79,7 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
 
   // Подготовка данных для таблицы из groupedData
   const tableRows = groupedData.map(item => [
-    item.date.split('-').reverse().join('-'), 
+    `${item.date.split('-').reverse().join('-')} ${item.time ? item.time.split(':').slice(0,2).join(':') : ''}`,
     item.title,
     item.cash_method.toString(),
     `${item.cash_sum} MDL`,

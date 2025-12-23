@@ -29,6 +29,12 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
     return `${year}-${month}-${date}`;
   }
 
+  const formatTime = (time?: string) => {
+    if (!time) return '';
+    const parts = time.split(':');
+    return parts.slice(0, 2).join(':');
+  }
+
 
   useEffect(() => {
     const getSpectacleDate = async () => {
@@ -109,6 +115,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
     string, {
       id: string,
       date: string,
+      time?: string,
       title: string,
       card_method: number,
       card_sum: number,
@@ -128,6 +135,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
       acc[key] = {
         id: spectacle.id,
         date: spectacle.date,
+        time: spectacle.time,
         title: spectacle.title,
         card_method: 0,
         card_sum: 0,
@@ -148,10 +156,12 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
     return acc;
   }, {})
 
-  // Turn grouped object into an array and sort by date then title
+  // Turn grouped object into an array and sort by date, time then title
   const sortedEntries = Object.values(groupedByDateAndTitle).sort((a, b) => {
     if (a.date < b.date) return -1;
     if (a.date > b.date) return 1;
+    if ((a.time || '') < (b.time || '')) return -1;
+    if ((a.time || '') > (b.time || '')) return 1;
     if (a.title < b.title) return -1;
     if (a.title > b.title) return 1;
     return 0;
@@ -248,7 +258,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
               {sortedEntries.map((data) => {
                 return (
                   <tr key={data.id}>
-                    <td>{data.date.split('-').reverse().join('-')}</td>
+                    <td>{data.date.split('-').reverse().join('-')} {formatTime(data.time)}</td>
                     <td>{data.title}</td>
                     <td>{data.cash_method}</td>
                     <td>{data.cash_sum}</td>
