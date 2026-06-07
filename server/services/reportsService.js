@@ -148,6 +148,7 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
   }
 
   // compute missing sold count (sales without per-serial records)
+  // Count all missing serials from the beginning of history to reflect actual current state of inventory
   const totalSoldRow = await db.get(`SELECT IFNULL(SUM(quantity),0) as total_sold FROM sales WHERE date(created_at) <= date('now')`);
   const ticketsSalesCountRow = await db.get(`SELECT IFNULL(COUNT(*),0) as tickets_sales_count FROM tickets_sales`);
   let missing = (totalSoldRow.total_sold || 0) - (ticketsSalesCountRow.tickets_sales_count || 0);
@@ -195,27 +196,6 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
   }
 
   const pad = (n) => String(n).padStart(maxWidth || 1, '0');
-  // Ensure the resulting remaining count matches totals.remaining_on_box (avoid off-by-one due to allocation)
-  const remainingSum = merged.reduce((acc, s) => acc + (s.to - s.from + 1), 0);
-  const expected = totals.remaining_on_box || 0;
-  let diff = remainingSum - expected;
-  if (diff > 0 && merged.length > 0) {
-    // trim from the last (highest) segment
-    for (let i = merged.length - 1; i >= 0 && diff > 0; i--) {
-      const seg = merged[i];
-      const segCount = seg.to - seg.from + 1;
-      if (segCount <= diff) {
-        // remove entire segment
-        diff -= segCount;
-        merged.splice(i, 1);
-      } else {
-        // shrink the end
-        seg.to = seg.to - diff;
-        diff = 0;
-      }
-    }
-  }
-
   const remaining_serials = merged.map(s => ({ from: pad(s.from), to: pad(s.to), count: s.to - s.from + 1 }));
 
   // Aggregate sales by month (year-month) within the requested period so the client can render a breakdown
