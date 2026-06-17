@@ -1,31 +1,18 @@
 import './ScheduleViewEditModal.scss';
 import { useState, useEffect } from 'react';
-
-
-type ScheduleDataType = {
-  time: string
-  title: string
-  date: string
-  type: string
-  id: string
-}
-
-type SpectacleData = {
-  title: string
-  id: string
-  type: string
-}
+import { spectaclesApi } from '../../api/spectaclesApi';
+import type { ScheduleItem, Spectacle } from '../../api/types';
 
 interface ScheduleViewEditModalProps {
-  selectedSpectacle: ScheduleDataType
+  selectedSpectacle: ScheduleItem
   setShowModalEdit: React.Dispatch<React.SetStateAction<boolean>>
   onConfirm: (title: string, id: string, type: string) => void
 }
 
 const ScheduleViewEditModal: React.FC<ScheduleViewEditModalProps> = ({ selectedSpectacle, setShowModalEdit, onConfirm }) => {
 
-  const [spectaleList, setSpectacleList] = useState<SpectacleData[]>([]);
-  const [spectacle, setSpectacle] = useState<SpectacleData>({
+  const [spectaleList, setSpectacleList] = useState<Spectacle[]>([]);
+  const [spectacle, setSpectacle] = useState<Spectacle>({
     title: selectedSpectacle.title,
     id: selectedSpectacle.id,
     type: selectedSpectacle.type
@@ -34,11 +21,7 @@ const ScheduleViewEditModal: React.FC<ScheduleViewEditModalProps> = ({ selectedS
 
   useEffect(() => {
     const fetchSpectaclesList = async () => {
-      const response = await fetch('http://localhost:5000/api/spectacles', {
-        method: 'GET'
-      });
-
-      const data = await response.json();
+      const data = await spectaclesApi.getAll();
       setSpectacleList(data);
     }
 
@@ -70,8 +53,8 @@ const ScheduleViewEditModal: React.FC<ScheduleViewEditModalProps> = ({ selectedS
         })}
       </select>
       <div className='editModal__buttons'>
-        <button className='editModal__button' onClick={() => onConfirm(spectacle.title, spectacle.id, spectacle.type)}>Accepta</button>
-        <button className='editModal__button' onClick={() => setShowModalEdit(false)}>Anuleaza</button>
+        <button className='editModal__button' onClick={() => onConfirm(spectacle.title, spectacle.id, spectacle.type)}>Acceptă</button>
+        <button className='editModal__button' onClick={() => setShowModalEdit(false)}>Anulează</button>
       </div>
     </div>
   )

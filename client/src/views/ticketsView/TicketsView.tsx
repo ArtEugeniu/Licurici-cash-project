@@ -1,230 +1,96 @@
-import { useState, useEffect } from 'react';
+﻿import { useEffect, useState } from 'react';
+import { getApiErrorMessage } from '../../api/client';
+import { ticketsApi } from '../../api/ticketsApi';
 import './TicketsView.scss';
+import IntegrityCheck from './components/IntegrityCheck';
+import TicketsEntryForm from './components/TicketsEntryForm';
+import TicketsEntryTable from './components/TicketsEntryTable';
+import TicketsPeriodReport from './components/TicketsPeriodReport';
 import TicketsReport from './ticketsReport/TicketsReport';
-import { generateTicketsPeriodReportPDF } from '../../utils/generateTicketsPeriodReportPDF';
+import { notifyError } from '../../utils/toast';
+import type { TicketEntry } from '../../api/types';
 
-interface TicketEntry {
-  id: string;
-  number_from: string;
-  number_to: string;
-  total_tickets: number;
-  created_at: string;
-}
+type TicketTabId = 'verificare' | 'primire' | 'perioada' | 'serii';
+
+const ticketTabs: { id: TicketTabId; label: string }[] = [
+  { id: 'verificare', label: 'Verificare' },
+  { id: 'primire', label: 'Primire' },
+  { id: 'perioada', label: 'Perioadă' },
+  { id: 'serii', label: 'Serii' },
+];
 
 const TicketsView: React.FC = () => {
-
-  const [ticketsNumber, setTicketsNumber] = useState<string>('0');
-  const [firstSerial, setFirstSerial] = useState<string>('0');
-  const [lastSerial, setLastSerial] = useState<string>('0');
+  const [activeTab, setActiveTab] = useState<TicketTabId>('verificare');
   const [ticketsInList, setTicketInList] = useState<TicketEntry[]>([]);
-  const [dateFrom, setDateFrom] = useState<string>(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  });
-  const [dateTo, setDateTo] = useState<string>(() => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  });
-
-  useEffect(() => {
-
-    const first = Number(firstSerial);
-    const last = first + Number(ticketsNumber) - 1;
-
-    const digits = firstSerial.length;
-
-    if (last <= 0) {
-      setLastSerial('0')
-    } else {
-      setLastSerial(String(last).padStart(digits, '0'));
-    }
-  }, [ticketsNumber, firstSerial]);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const fetchTicketsIn = async () => {
+    setLoading(true);
+
     try {
-      const response = await fetch('http://localhost:5000/api/tickets_in');
-      const data = await response.json();
+      const data = await ticketsApi.getReceived();
       setTicketInList(data);
     } catch (error) {
-      console.error('Eroare la preluarea biletelor:', error);
-    }
-  }
-
-
-  const addSerial = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (ticketsNumber === '0') {
-      alert('Selectati numarul de bilete primite');
-      return
-    }
-
-    const confirmAdd = window.confirm(
-      `Sigur doriți să adăugați biletele cu serii ${firstSerial} - ${lastSerial}?`
-    );
-    if (!confirmAdd) return;
-
-    try {
-
-      const response = await fetch('http://localhost:5000/api/tickets_in', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ firstSerial, lastSerial, ticketsNumber })
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        return alert(`Eroare: ${data.error}`);
-      }
-
-      const serialResp = await fetch('http://localhost:5000/api/ticket_serial', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-
-      if (!serialResp.ok) {
-        const serialData = await serialResp.json();
-        return alert(`Eroare la ticket_serial: ${serialData.error}`);
-      }
-
-      alert('Biletele si ticket_serial adaugate cu succes!');
-      fetchTicketsIn();
-      setFirstSerial('0');
-      setLastSerial('0');
-      setTicketsNumber('0');
-
-    } catch (err) {
-      alert(err);
+      notifyError(getApiErrorMessage(error, 'Eroare la preluarea biletelor'));
+    } finally {
+      setLoading(false);
     }
   };
 
-
-
   useEffect(() => {
-    fetchTicketsIn();
-  }, []);
+    if (activeTab === 'primire') {
+      fetchTicketsIn();
+    }
+  }, [activeTab]);
 
-
-
+  const renderActivePanel = () => {
+    switch (activeTab) {
+      case 'verificare':
+        return <IntegrityCheck />;
+      case 'primire':
+        return (
+          <>
+            <TicketsEntryForm onTicketsAdded={fetchTicketsIn} />
+            {loading ? (
+              <p className="app-status app-status--loading">Se încarcă lista biletelor primite...</p>
+            ) : (
+              <TicketsEntryTable ticketsInList={ticketsInList} />
+            )}
+          </>
+        );
+      case 'perioada':
+        return <TicketsPeriodReport />;
+      case 'serii':
+        return <TicketsReport />;
+      default:
+        return <IntegrityCheck />;
+    }
+  };
 
   return (
-    <div className='tickets'>
-      <h2 className="tickets__title">
-        Rapoarte Bilete
-      </h2>
+    <div className="tickets">
+      <h2 className="tickets__title">Rapoarte Bilete</h2>
 
-      <form className="tickets__entry-form">
-        <h3 className="tickets__entry-title">
-          Primire Bilete
-        </h3>
-        <div>
-          <label htmlFor="tickets-number">Cantitatea biletelor primite: </label>
-          <input
-            type="number"
-            id='tickets-number'
-            value={ticketsNumber}
-            min={0}
-            onChange={(e) => setTicketsNumber(e.target.value)}
-            onFocus={() => setTicketsNumber('')}
-            onBlur={() => {
-              if (ticketsNumber === '') {
-                setTicketsNumber('0')
-              }
-            }}
-          />
-        </div>
-        <div>
-          <label htmlFor="tickets-serial">Numarul unic al primului bilet: </label>
-          <input
-            type="number"
-            id='tickets-serial'
-            value={firstSerial}
-            min={0}
-            onChange={(e) => setFirstSerial(e.target.value)}
-            onFocus={() => setFirstSerial('')}
-            onBlur={() => {
-              if (firstSerial === '') {
-                setFirstSerial('0')
-              }
-            }}
-          />
-        </div>
-        <div>
-          <label htmlFor="serial-calc">Numarul unic al ultimului bilet: </label>
-          <input type="text" id='serial-calc' value={lastSerial} />
-        </div>
-
-        <button className='tickets__entry-button' onClick={addSerial}>Adaugă</button>
-      </form>
-
-      <div className="tickets__entry-report">
-        <table className="tickets__entry-table">
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Număr de serie de la</th>
-              <th>Număr de serie pana la</th>
-              <th>Numărul de Bilete</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ticketsInList.map(ticket => {
-              return (
-                <tr key={ticket.id}>
-                  <td>{
-                    ticket.created_at
-                      .split(" ")[0]
-                      .split("-")
-                      .reverse()
-                      .join("-")
-                  }</td>
-                  <td>{ticket.number_from}</td>
-                  <td>{ticket.number_to}</td>
-                  <td>{ticket.total_tickets}</td>
-                </tr>
-              )
-            })}
-
-          </tbody>
-        </table>
-      </div>
-
-      <div className="tickets__report-period">
-        <h3>Raport pe perioada</h3>
-        <div className="period__dates">
-          <label>
-            De la: <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
-          </label>
-          <label>
-            Pana la: <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-          </label>
-        </div>
-        <div className="period__actions">
+      <div className="tickets__tabs" role="tablist" aria-label="Secțiuni rapoarte bilete">
+        {ticketTabs.map((tab) => (
           <button
-            className="period__pdf-button"
-            onClick={async () => {
-              try {
-                const res = await fetch(`http://localhost:5000/api/reports/tickets_period?startDate=${dateFrom}&endDate=${dateTo}`);
-                if (!res.ok) {
-                  const err = await res.json();
-                  alert(err.error || 'Eroare la generarea raportului');
-                  return;
-                }
-
-                const data = await res.json();
-                generateTicketsPeriodReportPDF(data);
-              } catch (error) {
-                alert('Eroare la descărcarea raportului: ' + error);
-              }
-            }}
-          >Descarca PDF</button>
-        </div>
+            key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab.id}
+            className={`tickets__tab ${activeTab === tab.id ? 'tickets__tab--active' : ''}`}
+            onClick={() => setActiveTab(tab.id)}
+          >
+            {tab.label}
+          </button>
+        ))}
       </div>
-      <TicketsReport />
 
+      <div className="tickets__panel" role="tabpanel">
+        {renderActivePanel()}
+      </div>
     </div>
-  )
-}
+  );
+};
 
 export default TicketsView;

@@ -26,11 +26,32 @@
     padding: 5px;
     background-color: #fff;
   }
+
+  &__roll-stock {
+    margin-top: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #245c2e;
+  }
+
+  &__roll-stock--error {
+    color: #b00020;
+  }
   
   &__total span {
     border: 1px solid black;
     padding: 5px;
     background-color: #fff;
+  }
+
+  &__confirm-summary {
+    background-color: #fff;
+    border: 1px solid black;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    font-size: 17px;
   }
 
   &__buttons {
@@ -47,13 +68,22 @@
       font-size: 20px;
       transition: opacity 0.3s;
 
-      &:hover {
+      &:hover:not(:disabled) {
         opacity: 0.8;
       }
 
-      &:active {
-        opacity: 0.4
+      &:active:not(:disabled) {
+        opacity: 0.4;
+      }
+
+      &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
       }
     }
+  }
+
+  &__cancel {
+    background-color: #666 !important;
   }
 }

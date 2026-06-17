@@ -78,7 +78,7 @@ const MonthlyReports: React.FC<MonthlyReportsProps> = ({ sales }) => {
   return (
     <div className="monthly">
       <h2 className="monthly__title">Rapoarte lunare</h2>
-      <label htmlFor="monthly">Selectati luna:{" "}</label>
+      <label htmlFor="monthly">Selectați luna:{" "}</label>
       <input className='monthly__date' type="month" id='monthly' value={selectedMonth} onChange={(e) => setSelectedMonth(e.target.value)} />
       <table className='monthly__table'>
         <thead>

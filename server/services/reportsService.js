@@ -1,4 +1,6 @@
 export async function generateTicketsPeriodReport(db, startDate, endDate) {
+  const serialTrackingStartDate = '2025-10-01';
+
   // tickets_in entries (keep individual receipts with serials)
   const ticketsInRows = await db.all(
     `SELECT id, number_from, number_to, total_tickets as tickets_received, created_at
@@ -100,16 +102,18 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
     sold_from_new,
   };
 
-  // Compute remaining serial ranges as of now (current DB state)
-  // We'll consider two sources of sold information:
-  //  - exact per-serial rows in tickets_sales
-  //  - aggregated sales in sales (some old sales may not have tickets_sales entries)
-  // Strategy:
-  // 1) Build per-batch remaining segments from tickets_in
-  // 2) Subtract exact tickets_sales serials (if any)
-  // 3) Compute missing = total_sold_up_to_now - count(tickets_sales); allocate missing across batches by tickets_in.created_at (oldest first)
+  // Compute remaining serial ranges from explicit serial data only.
+  // Typographic gaps are naturally handled because only ranges from tickets_in exist.
+  // Sales without tickets_sales rows are reported by totals, but should not silently
+  // consume guessed serial numbers in the remaining-series list.
 
-  const batchesAll = await db.all(`SELECT id, number_from, number_to, created_at FROM tickets_in ORDER BY datetime(created_at) ASC`);
+  const batchesAll = await db.all(
+    `SELECT id, number_from, number_to, created_at
+     FROM tickets_in
+     WHERE date(created_at) >= ?
+     ORDER BY datetime(created_at) ASC`,
+    [serialTrackingStartDate]
+  );
   let maxWidth = 0;
   const perBatchSegs = new Map();
   for (const b of batchesAll) {
@@ -118,6 +122,69 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
     if (isNaN(nf) || isNaN(nt) || nf > nt) continue;
     perBatchSegs.set(String(b.id), [{ from: nf, to: nt }]);
     if (b.number_from && b.number_from.length > maxWidth) maxWidth = b.number_from.length;
+  }
+
+  // Helper to compute remaining segments as of a cutoff date (date string YYYY-MM-DD)
+  async function computeRemainingSegmentsAt(cutoffDate) {
+    // Build segments only from tickets_in that were received before the cutoffDate
+    const batchesFiltered = batchesAll.filter(b => String(b.created_at).split(' ')[0] < cutoffDate);
+    const segsMap = new Map();
+    let localMaxWidth = 0;
+    for (const b of batchesFiltered) {
+      const nf = Number(b.number_from);
+      const nt = Number(b.number_to);
+      if (isNaN(nf) || isNaN(nt) || nf > nt) continue;
+      segsMap.set(String(b.id), [{ from: nf, to: nt }]);
+      if (b.number_from && b.number_from.length > localMaxWidth) localMaxWidth = b.number_from.length;
+    }
+
+    // subtract exact sold serials up to cutoffDate
+    const soldRowsCutoff = await db.all(
+      `SELECT ts.batch_id, ts.serial_number FROM tickets_sales ts JOIN sales sa ON ts.sale_id = sa.id WHERE date(sa.created_at) < ? ORDER BY ts.batch_id ASC, ts.serial_number ASC`,
+      [cutoffDate]
+    );
+    for (const r of soldRowsCutoff) {
+      const bid = String(r.batch_id);
+      const num = Number(r.serial_number);
+      if (!segsMap.has(bid) || isNaN(num)) continue;
+      const segs = segsMap.get(bid);
+      const newSegs = [];
+      for (const seg of segs) {
+        if (num < seg.from || num > seg.to) {
+          newSegs.push(seg);
+          continue;
+        }
+        if (num === seg.from && num === seg.to) {
+          // remove whole
+        } else if (num === seg.from) {
+          newSegs.push({ from: seg.from + 1, to: seg.to });
+        } else if (num === seg.to) {
+          newSegs.push({ from: seg.from, to: seg.to - 1 });
+        } else {
+          newSegs.push({ from: seg.from, to: num - 1 });
+          newSegs.push({ from: num + 1, to: seg.to });
+        }
+      }
+      segsMap.set(bid, newSegs);
+    }
+    // collect and merge from filtered map
+    const allSegsCutoff = [];
+    for (const [bid, segs] of segsMap.entries()) {
+      for (const s of segs) allSegsCutoff.push({ from: s.from, to: s.to });
+    }
+    allSegsCutoff.sort((a, b) => a.from - b.from);
+    const mergedCutoff = [];
+    for (const seg of allSegsCutoff) {
+      if (mergedCutoff.length === 0) mergedCutoff.push({ ...seg });
+      else {
+        const last = mergedCutoff[mergedCutoff.length - 1];
+        if (seg.from <= last.to + 1) last.to = Math.max(last.to, seg.to);
+        else mergedCutoff.push({ ...seg });
+      }
+    }
+
+    const pad = (n) => String(n).padStart(localMaxWidth || maxWidth || 1, '0');
+    return mergedCutoff.map(s => ({ from: pad(s.from), to: pad(s.to), count: s.to - s.from + 1 }));
   }
 
   // subtract exact sold serials per batch
@@ -145,38 +212,6 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
       }
     }
     perBatchSegs.set(bid, newSegs);
-  }
-
-  // compute missing sold count (sales without per-serial records)
-  // Count all missing serials from the beginning of history to reflect actual current state of inventory
-  const totalSoldRow = await db.get(`SELECT IFNULL(SUM(quantity),0) as total_sold FROM sales WHERE date(created_at) <= date('now')`);
-  const ticketsSalesCountRow = await db.get(`SELECT IFNULL(COUNT(*),0) as tickets_sales_count FROM tickets_sales`);
-  let missing = (totalSoldRow.total_sold || 0) - (ticketsSalesCountRow.tickets_sales_count || 0);
-  if (missing < 0) missing = 0;
-
-  // allocate missing across batches in created_at order (oldest receipts first)
-  for (const b of batchesAll) {
-    if (missing <= 0) break;
-    const bid = String(b.id);
-    const segs = perBatchSegs.get(bid) || [];
-    if (!segs.length) continue;
-    // consume from the start (lowest serials)
-    let i = 0;
-    while (i < segs.length && missing > 0) {
-      const seg = segs[i];
-      const segCount = seg.to - seg.from + 1;
-      if (segCount <= missing) {
-        // remove whole segment
-        missing -= segCount;
-        segs.splice(i, 1);
-      } else {
-        // shrink from the front
-        seg.from = seg.from + missing;
-        missing = 0;
-        i++;
-      }
-    }
-    perBatchSegs.set(bid, segs);
   }
 
   // collect all remaining segments across batches and merge contiguous ranges
@@ -250,7 +285,28 @@ export async function generateTicketsPeriodReport(db, startDate, endDate) {
     return { month: monthLabel, count: r.count };
   });
 
-  return { startDate, endDate, dailyRows, totals, meta, remaining_serials, sales_by_month, sales_amount_by_month, generated_at: new Date().toISOString() };
+  // Build beginning serial ranges for each month start within the requested period
+  const beginning_serials_by_month = [];
+  try {
+    const sd = new Date(startDate + 'T00:00:00');
+    const ed = new Date(endDate + 'T00:00:00');
+    // normalize to first day of month for start
+    let cur = new Date(sd.getFullYear(), sd.getMonth(), 1);
+    while (cur <= ed) {
+      const y = cur.getFullYear();
+      const m = cur.getMonth();
+      const monthStart = `${y}-${String(m+1).padStart(2,'0')}-01`;
+      const ranges = await computeRemainingSegmentsAt(monthStart);
+      const monthLabel = `${roMonths[m]} ${y}`;
+      beginning_serials_by_month.push({ ym: `${y}-${String(m+1).padStart(2,'0')}`, month: monthLabel, ranges });
+      // advance month
+      cur = new Date(y, m+1, 1);
+    }
+  } catch (e) {
+    console.error('Error computing beginning_serials_by_month:', e);
+  }
+
+  return { startDate, endDate, dailyRows, totals, meta, remaining_serials, sales_by_month, sales_amount_by_month, beginning_serials_by_month, generated_at: new Date().toISOString() };
 }
 
 export default generateTicketsPeriodReport;

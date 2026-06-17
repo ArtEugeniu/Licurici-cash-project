@@ -1,8 +1,18 @@
 import express from 'express';
 import { db } from '../db/index.js';
+import { getTicketStockSummary } from '../services/ticketStockService.js';
 
 export const routerTicketSerial = express.Router();
 
+routerTicketSerial.get('/remaining', async (req, res) => {
+  try {
+    const summary = await getTicketStockSummary(db);
+    res.json(summary);
+  } catch (error) {
+    console.error('Eroare la calcularea biletelor ramase:', error);
+    res.status(500).json({ error: 'Eroare la calcularea biletelor ramase' });
+  }
+});
 routerTicketSerial.get('/', async (req, res) => {
   try {
     const tickets = await db.all('SELECT * FROM ticket_serial ORDER BY id ASC');

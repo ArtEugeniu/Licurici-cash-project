@@ -1,11 +1,12 @@
 import express from 'express';
 import { db } from '../db/index.js'
+import { createTicketsBatch, getTicketsIn } from '../services/ticketsInService.js';
 
 export const routerTicketsIn = express.Router();
 
 routerTicketsIn.get('/', async (req, res) => {
   try {
-    const tickets = await db.all('SELECT * FROM tickets_in ORDER BY created_at DESC');
+    const tickets = await getTicketsIn(db);
     res.json(tickets);
   } catch (error) {
     console.error('Eroare la preluarea biletelor:', error);
@@ -15,14 +16,10 @@ routerTicketsIn.get('/', async (req, res) => {
 
 routerTicketsIn.post("/", async (req, res) => {
   try {
-    const { firstSerial, lastSerial, ticketsNumber } = req.body;
-
-    await db.run('INSERT INTO tickets_in (number_from, number_to, total_tickets) VALUES (?, ?, ?)', [firstSerial, lastSerial, ticketsNumber]);
-
-    const data = await db.all('SELECT * FROM tickets_in');
-    res.json(data)
+    const result = await createTicketsBatch(db, req.body);
+    res.json(result.tickets)
   } catch (error) {
     console.error(error);
-    res.status(500).json({ error: 'Eroare la adaugarea pachetului de bilete' })
+    res.status(error.statusCode || 500).json({ error: error.message || 'Eroare la adaugarea pachetului de bilete' })
   }
 });

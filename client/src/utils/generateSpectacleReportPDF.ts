@@ -56,7 +56,6 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
   const {
     selectedDate,
     dateTo,
-    spectacleTitle,
     totalCashTickets,
     totalCardTickets,
     totalCashSum,
@@ -98,7 +97,7 @@ export const generateSpectacleReportPDF = (data: SpectacleReportData) => {
       'Nr. bilete card',
       'Suma bilete card',
       'Nr. total bilete',
-      'Suma totala'
+      'Suma totală'
     ]],
     body: tableRows,
     styles: { font: 'Roboto', fontSize: 10 },

@@ -16,7 +16,7 @@ routerTicketsReport.get('/', async (req, res) => {
     FROM tickets_sales ts
     JOIN sales sa ON ts.sale_id = sa.id
     JOIN schedule s ON ts.schedule_id = s.id
-    WHERE sa.created_at BETWEEN ? AND ?
+    WHERE date(sa.created_at) BETWEEN ? AND ?
   `;
 
   const params = [startDate, endDate];

@@ -1,19 +1,14 @@
-import './SpectacleReports.scss';
+﻿import './SpectacleReports.scss';
 import { useEffect, useState } from 'react';
+import { getApiErrorMessage } from '../../../../api/client';
+import { scheduleApi } from '../../../../api/scheduleApi';
+import { spectaclesApi } from '../../../../api/spectaclesApi';
+import type { Sale, ScheduleItem } from '../../../../api/types';
+import { notifyError } from '../../../../utils/toast';
 import { generateSpectacleReportPDF } from '../../../../utils/generateSpectacleReportPDF';
 import type { SpectacleReportData } from '../../../../utils/generateSpectacleReportPDF';
 
 
-type Sale = {
-  id: string;
-  quantity: number;
-  total_sum: number;
-  payment_method: string;
-  created_at: string;
-  type: string;
-  title: string;
-  schedule_id: string
-};
 
 interface SpectacleReportsProps {
   sales: Sale[]
@@ -36,61 +31,35 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   }
 
 
-  useEffect(() => {
-    const getSpectacleDate = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/schedule', {
-          method: 'GET'
-        });
-
-        const data = await response.json();
-        setScheduleList(data);
-      } catch (error) {
-        alert('Eroare la primirea datei spectacolului: ' + error);
-      }
-    }
-
-    getSpectacleDate()
-  }, []);
-
-
-
   const [selectedDate, setDateFrom] = useState<string>(getCurrentDate());
   const [dateTo, setDateTo] = useState<string>(getCurrentDate());
   const [spectaclesList, setSpectaclesList] = useState<string[]>([]);
   const [selectedSpectacle, setSelectedSpectacle] = useState<string>('toate spectacolele');
-  const [scheduleList, setScheduleList] = useState<{
-    date: string,
-    id: string,
-    type: string,
-    time: string,
-    title: string
-  }[]>([]);
+  const [scheduleList, setScheduleList] = useState<ScheduleItem[]>([]);
+  const [metadataLoading, setMetadataLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    console.log(scheduleList)
-  }, [scheduleList])
+    const loadMetadata = async () => {
+      setMetadataLoading(true);
 
-  useEffect(() => {
-    const fetchSpectaclesList = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/spectacles', {
-          method: 'GET'
-        })
+        const [scheduleData, spectaclesData] = await Promise.all([
+          scheduleApi.getAll(),
+          spectaclesApi.getAll(),
+        ]);
 
-        const data: { title: string }[] = await response.json();
+        setScheduleList(scheduleData);
         setSpectaclesList([
           'Toate Spectacolele',
-          ...Array.from(new Set(data.map((sale: { title: string }) => sale.title)))
-        ]
-        );
-
+          ...Array.from(new Set(spectaclesData.map((item) => item.title))),
+        ]);
       } catch (error) {
-        alert('Eroare la incarcarea listei spectacolelor: ' + error)
+        notifyError(getApiErrorMessage(error, 'Eroare la încărcarea datelor pentru raport'));
+      } finally {
+        setMetadataLoading(false);
       }
-    }
-
-    fetchSpectaclesList();
+    };
+    loadMetadata();
   }, []);
 
 
@@ -168,18 +137,6 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   });
 
 
-  useEffect(() => {
-    console.log(groupedByDateAndTitle)
-
-  }, [groupedByDateAndTitle]);
-
-  useEffect(() => {
-    console.log(filteredSales)
-  }, [filteredSales])
-
-
-
-
   const spectacleTitle = Array.from(new Set(filteredSales.map(item => item.title))).join('');
 
   const cashMethod = filteredSales.filter(item => item.payment_method === 'cash');
@@ -197,10 +154,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   const handleDownloadPDF = () => {
     const sortedGroupedData = Object.values(groupedByDateAndTitle)
       .sort((a, b) => (a.date < b.date ? -1 : a.date > b.date ? 1 : a.title < b.title ? -1 : a.title > b.title ? 1 : 0))
-      .map((data) => ({
-        date: data.date,
-        ...data
-      }));
+      .map((data) => ({ ...data }));
 
     const data: SpectacleReportData = {
       selectedDate,
@@ -220,8 +174,12 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
   return (
     <div className='spectacle'>
       <h2 className="spectacle__title">
-        Rapoarte dupa Spectacol
+        Rapoarte după Spectacol
       </h2>
+      {metadataLoading ? (
+        <p className="app-status app-status--loading">Se încarcă datele spectacolelor...</p>
+      ) : (
+        <>
       <select className="spectacle__select" name="" id="" value={selectedSpectacle} onChange={(e) => setSelectedSpectacle(e.target.value)}>
         {
           spectaclesList.map(item => {
@@ -234,7 +192,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
       <label className='spectacle__label spectacle__label-from' htmlFor="spectacle-date">Data de la:
         <input className='spectacle__date' type="date" id='spectacle-date' value={selectedDate} onChange={(e) => setDateFrom(e.target.value)} />
       </label>
-      <label className='spectacle__label spectacle__label-to' htmlFor="spectacle-date">Data pana la:
+      <label className='spectacle__label spectacle__label-to' htmlFor="spectacle-date">Data până la:
         <input className='spectacle__date' type="date" id='spectacle-date' value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
       </label>
 
@@ -251,7 +209,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
                 <th>Nr. bilete card</th>
                 <th>Suma bilete card</th>
                 <th>Nr. total bilete</th>
-                <th>Suma totala</th>
+                <th>Suma totală</th>
               </tr>
             </thead>
             <tbody>
@@ -282,7 +240,7 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
               <p><strong>Nr. de bilete card:</strong> {totalCardTickets}</p>
               <p><strong>Suma pe bilete card:</strong> {totalCardSum} MDL</p>
               <p><strong>Bilete total:</strong> {totalTickets}</p>
-              <p><strong>Suma totala:</strong> {totalSum} MDL</p>
+              <p><strong>Suma totală:</strong> {totalSum} MDL</p>
             </div>
 
             <button
@@ -296,7 +254,9 @@ const SpectacleReports: React.FC<SpectacleReportsProps> = ({ sales }) => {
           </div>
         </>
       ) : (
-        <h3>Nu au fost gasite spectacole pentru perioada {selectedDate.split('-').reverse().join('-')} - {dateTo.split('-').reverse().join('-')}</h3>
+        <h3>Nu au fost găsite spectacole pentru perioada {selectedDate.split('-').reverse().join('-')} - {dateTo.split('-').reverse().join('-')}</h3>
+      )}
+        </>
       )}
     </div>
   )

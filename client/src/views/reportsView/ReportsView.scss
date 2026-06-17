@@ -5,8 +5,53 @@
   &__title {
     font-size: 40px;
     text-align: center;
-    padding: 25px 0;
+    padding: 25px 0 10px;
   }
 
-  
+  &__tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  &__tab {
+    padding: 10px 20px;
+    border-radius: 10px;
+    background-color: #e8e8e8;
+    color: #222;
+    font-size: 18px;
+    font-weight: 500;
+    transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+
+    &:hover {
+      opacity: 0.85;
+    }
+
+    &--active {
+      background-color: #5300ff;
+      color: #fff;
+    }
+  }
+
+  &__panel {
+    .daily,
+    .monthly,
+    .spectacle,
+    .period {
+      padding: 10px 0 30px;
+
+      &::after {
+        display: none;
+      }
+    }
+
+    .daily__title,
+    .monthly__title,
+    .spectacle__title,
+    .period__title {
+      display: none;
+    }
+  }
 }

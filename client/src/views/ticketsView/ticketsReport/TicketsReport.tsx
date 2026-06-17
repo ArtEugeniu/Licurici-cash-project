@@ -1,122 +1,72 @@
-import './TicketsReport.scss';
+﻿import './TicketsReport.scss';
 import { useEffect, useState } from 'react';
-
-type TicketReportItem = {
-  serial_number: string;
-  spectacle: string;
-  type: string
-  payment_method: string;
-  created_at: string;
-  price?: number
-};
+import { getApiErrorMessage } from '../../../api/client';
+import { reportsApi } from '../../../api/reportsApi';
+import { notifyError } from '../../../utils/toast';
+import TicketsReportFilters from './components/TicketsReportFilters';
+import TicketsReportSummary from './components/TicketsReportSummary';
+import TicketsReportTable from './components/TicketsReportTable';
+import { getDefaultReportDates, getTicketPrice } from './helpers';
+import type { TicketReportItem } from '../../../api/types';
 
 const TicketsReport: React.FC = () => {
-
+  const defaultDates = getDefaultReportDates();
   const [report, setReport] = useState<TicketReportItem[]>([]);
-  const [startDate, setStartDate] = useState<string>('');
-  const [endDate, setEndDate] = useState<string>('');
-
-  const getDate = () => {
-    const date = new Date();
-    const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, '0');
-    const day = date.getDate().toString().padStart(2, '0');
-    const dayTo = (date.getDate() + 1).toString().padStart(2, '0');
-
-    setStartDate(`${year}-${month}-${day}`);
-    setEndDate(`${year}-${month}-${dayTo}`);
-  }
+  const [startDate, setStartDate] = useState<string>(defaultDates.startDate);
+  const [endDate, setEndDate] = useState<string>(defaultDates.endDate);
+  const [loading, setLoading] = useState<boolean>(true);
 
   const firstSerial = report.length > 0 ? report[0].serial_number : '';
   const lastSerial = report.length > 0 ? report[report.length - 1].serial_number : '';
   const totalTickets = report.length;
 
-  const getPrice = (type: string) => {
-    switch (type) {
-      case 'Standart':
-        return 100;
-      case 'Premiera':
-        return 150;
-      case 'Special':
-        return 200;
-    }
-  }
-
   const fetchReport = async () => {
-
     if (!startDate || !endDate) return;
 
+    setLoading(true);
+
     try {
-      const res = await fetch(`http://localhost:5000/api/ticketsReport?startDate=${startDate}&endDate=${endDate}`);
-
-      const data = await res.json();
-
-      const formattedData = data.map((item: any) => ({
+      const data = await reportsApi.getTicketReport(startDate, endDate);
+      const formattedData = data.map((item: TicketReportItem) => ({
         ...item,
-        price: getPrice(item.type),
+        price: getTicketPrice(item.type),
       }));
-
-      console.log(formattedData)
 
       setReport(formattedData);
     } catch (error) {
-      alert('Eroare la preluarea raportului epntru bilete')
+      notifyError(getApiErrorMessage(error, 'Eroare la preluarea raportului pentru bilete'));
+      setReport([]);
+    } finally {
+      setLoading(false);
     }
-  }
-
+  };
   useEffect(() => {
-    getDate();
-  }, []);
-
-  useEffect(() => {
-    fetchReport()
-  }, [startDate, endDate])
+    fetchReport();
+  }, [startDate, endDate]);
 
   return (
-    <div className='ticketsReport'>
-      <h2 className='ticketsReport__title'>Raport pe Bilete</h2>
-      <div className="ticketsReport__filters">
-        <label>
-          De la:
-          <input type="date" value={startDate} onChange={e => setStartDate(e.target.value)} />
-        </label>
-        <label>
-          Până la:
-          <input type="date" value={endDate} onChange={e => setEndDate(e.target.value)} />
-        </label>
-      </div>
-      <div className='ticketsReport__table-wrapper'>
-        <table className="ticketsReport__table">
-          <thead>
-            <tr>
-              <th>Nr. Serie</th>
-              <th>Spectacol</th>
-              <th>Preț</th>
-              <th>Metodă plată</th>
-              <th>Data vânzării</th>
-            </tr>
-          </thead>
-          <tbody>
-            {report.map(item => (
-              <tr key={item.serial_number + item.created_at}>
-                <td>{item.serial_number}</td>
-                <td>{item.spectacle}</td>
-                <td>{item.price}</td>
-                <td>{item.payment_method}</td>
-                <td>{item.created_at}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-
-      </div>
-      <div className="ticketsReport__summary">
-        <p>Primul numar de serie: {firstSerial}</p>
-        <p>ultimul numar de serie: {lastSerial}</p>
-        <p>Total bilete: {totalTickets}</p>
-      </div>
+    <div className="ticketsReport">
+      <h2 className="ticketsReport__title">Raport pe Bilete</h2>
+      <TicketsReportFilters
+        startDate={startDate}
+        endDate={endDate}
+        onStartDateChange={setStartDate}
+        onEndDateChange={setEndDate}
+      />
+      {loading ? (
+        <p className="app-status app-status--loading">Se încarcă raportul...</p>
+      ) : (
+        <>
+          <TicketsReportTable report={report} />
+          <TicketsReportSummary
+            firstSerial={firstSerial}
+            lastSerial={lastSerial}
+            totalTickets={totalTickets}
+          />
+        </>
+      )}
     </div>
-  )
-}
+  );
+};
 
 export default TicketsReport;

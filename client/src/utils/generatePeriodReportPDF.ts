@@ -39,7 +39,7 @@ export const generatePeriodReportPDF = (data: PeriodReportData) => {
   doc.text(`Raport vânzări — ${startDate} până la ${endDate}`, 14, 15);
 
   autoTable(doc, {
-    head: [['Tip plata', 'Nr. bilete', 'Suma']],
+    head: [['Tip plată', 'Nr. bilete', 'Suma']],
     styles: { font: 'Roboto' },
     body: [
       ['Numerar', totalCashTickets.toString(), `${totalCashAmount} MDL`],

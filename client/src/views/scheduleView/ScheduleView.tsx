@@ -1,139 +1,129 @@
-import './ScheduleView.scss';
+﻿import './ScheduleView.scss';
 import { useEffect, useState } from 'react';
+import { getApiErrorMessage } from '../../api/client';
+import { salesApi } from '../../api/salesApi';
+import { scheduleApi } from '../../api/scheduleApi';
+import type { Sale, ScheduleItem } from '../../api/types';
+import { notifyError, notifySuccess } from '../../utils/toast';
+import { fetchTicketStockInfo, type TicketStockInfo } from '../../utils/remainingTickets';
 import ScheduleViewModal from './ScheduleViewModal';
 import ScheduleViewEditModal from './ScheduleViewEditModal';
 
-type ScheduleDataType = {
-  time: string
-  title: string
-  date: string
-  type: string
-  id: string
-}
-
-type Sale = {
-  id: string;
-  quantity: number;
-  total_sum: number;
-  payment_method: string;
-  created_at: string;
-  type: string;
-  title: string;
-  schedule_id: string
-};
-
-
 const ScheduleView: React.FC = () => {
 
-  const [scheduleData, setScheduleData] = useState<ScheduleDataType[]>([]);
+  const [scheduleData, setScheduleData] = useState<ScheduleItem[]>([]);
   const [showModal, setShowModal] = useState<boolean>(false);
   const [showModalEdit, setShowModalEdit] = useState<boolean>(false);
-  const [selectedSpectacle, setSelectedSpectacle] = useState<ScheduleDataType>({
+  const [selectedSpectacle, setSelectedSpectacle] = useState<ScheduleItem>({
     time: '',
     title: '',
     date: '',
     type: '',
     id: ''
   });
+  const [ticketStock, setTicketStock] = useState<TicketStockInfo | null>(null);
+  const [remainingLoading, setRemainingLoading] = useState<boolean>(true);
+  const [scheduleLoading, setScheduleLoading] = useState<boolean>(true);
+  const [soldBySchedule, setSoldBySchedule] = useState<Record<string, number>>({});
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
+  const fetchSoldTickets = async () => {
+    try {
+      const sales = await salesApi.getAll();
+      const counts = sales.reduce<Record<string, number>>((acc, sale) => {
+        const scheduleId = String(sale.schedule_id || '').trim();
+        if (!scheduleId) return acc;
+        acc[scheduleId] = (acc[scheduleId] || 0) + sale.quantity;
+        return acc;
+      }, {});
+
+      setSoldBySchedule(counts);
+    } catch {
+      setSoldBySchedule({});
+    }
+  };
+
+  const handleSaleComplete = async () => {
+    await Promise.all([fetchRemainingTickets(), fetchSoldTickets()]);
+  };
+
+  const fetchRemainingTickets = async () => {
+    setRemainingLoading(true);
+
+    try {
+      const stock = await fetchTicketStockInfo();
+      setTicketStock(stock);
+    } catch {
+      setTicketStock(null);
+    } finally {
+      setRemainingLoading(false);
+    }
+  };
 
   const scheduleList = async () => {
+    setScheduleLoading(true);
 
-    const response = await fetch('http://localhost:5000/api/schedule', {
-      method: 'GET',
-    });
-
-    if (!response.ok) {
-      throw new Error('Eroare la încărcarea afișei');
-    }
-
-    const data = await response.json();
-
-    if (data) {
-
+    try {
+      const data = await scheduleApi.getAll();
       const today = new Date();
       today.setHours(0, 0, 0, 0);
 
-      const sorted = data.sort((a: any, b: any) => {
+      const sorted = data.sort((a: ScheduleItem, b: ScheduleItem) => {
         return new Date(a.date).getTime() - new Date(b.date).getTime()
       })
 
-      const filtered = sorted.filter((item: any) => {
+      const filtered = sorted.filter((item: ScheduleItem) => {
         const itemDate = new Date(item.date);
         return itemDate >= today;
       });
       setScheduleData(filtered);
+    } catch (error) {
+      notifyError(getApiErrorMessage(error, 'Eroare la încărcarea afișei'));
+    } finally {
+      setScheduleLoading(false);
     }
-
   }
-
   useEffect(() => {
-
     scheduleList();
-
+    fetchRemainingTickets();
+    fetchSoldTickets();
   }, []);
 
-  useEffect(() => {
-    console.log(scheduleData)
-  }, [scheduleData])  
-
   const editSpectacle = async (title: string, id: string, type: string) => {
-
-    const confirm = window.confirm('Sunteti sigur ca doriti sa editati acest spectacol?');
-
-    if (!confirm) return;
-
-
     try {
-      const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, type })
-      });
-
-      if (!response.ok) {
-        alert('Eroare la editarea spectacolului');
-      }
-
-
+      await scheduleApi.update(id, { title, type });
+      notifySuccess('Spectacolul a fost editat');
       scheduleList();
       setShowModalEdit(false);
     } catch (error) {
-      alert('Eroare la editarea spectacolului')
+      notifyError(getApiErrorMessage(error, 'Eroare la editarea spectacolului'));
     }
   }
 
   const removeSpectacle = async (id: string) => {
-    
-    try {
-      const salesResponse = await fetch('http://localhost:5000/api/sales');
-      if (!salesResponse.ok) {
-        alert('Eroare la verificarea vanzarilor');
-        return;
-      }
+    if (pendingDeleteId !== id) {
+      setPendingDeleteId(id);
+      return;
+    }
 
-      const sales = await salesResponse.json();
+    try {
+      const sales = await salesApi.getAll();
 
       const findSale = sales.filter((item: Sale) => item.schedule_id === id);
 
       if (findSale.length > 0) {
-        alert('Nu puteți șterge spectacolul: există deja vânzări pentru acest spectacol.');
+        notifyError('Nu puteți șterge spectacolul: există deja vânzări pentru acest spectacol.');
+        setPendingDeleteId(null);
         return;
       }
 
-      const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
-      if (!confirmed) return;
-
-      const response = await fetch(`http://localhost:5000/api/schedule/${id}`, {
-        method: 'DELETE'
-      })
-
-      if (response.ok) {
-        setScheduleData(prev => prev.filter(item => item.id !== id));
-      } else {
-        alert('Eroare la ștergere');
-      }
+      await scheduleApi.remove(id);
+      setScheduleData(prev => prev.filter(item => item.id !== id));
+      notifySuccess('Spectacolul a fost șters');
     } catch (error) {
-      alert('Eroare: ' + error)
+      notifyError(getApiErrorMessage(error, 'Eroare la ștergere'));
+    } finally {
+      setPendingDeleteId(null);
     }
   }
 
@@ -147,23 +137,80 @@ const ScheduleView: React.FC = () => {
   return (
     <div className='program'>
       <h2 className='program__title'>Program</h2>
-      {showModal && <ScheduleViewModal selectedSpectacle={selectedSpectacle} setShowModal={setShowModal} />}
+      <div
+        className={`program__stock ${
+          ticketStock?.currentRoll && ticketStock.currentRoll.remaining < 50 ? 'program__stock--low' : ''
+        }`}
+      >
+        {remainingLoading ? (
+          <p>Se încarcă stocul de bilete...</p>
+        ) : ticketStock === null ? (
+          <p>Stoc bilete indisponibil</p>
+        ) : (
+          <>
+            <p>
+              Rămase la casă: {ticketStock.remaining}{' '}
+              {ticketStock.remaining === 1 ? 'bilet' : 'bilete'}
+            </p>
+            {ticketStock.currentRoll ? (
+              <p className="program__stock-roll">
+                În rolă curentă: {ticketStock.currentRoll.remaining}{' '}
+                {ticketStock.currentRoll.remaining === 1 ? 'bilet' : 'bilete'}{' '}
+                ({ticketStock.currentRoll.nextSerial} – {ticketStock.currentRoll.serialTo})
+              </p>
+            ) : (
+              <p className="program__stock-roll">Nicio rolă activă</p>
+            )}
+          </>
+        )}
+      </div>
+      {showModal && (
+        <ScheduleViewModal
+          selectedSpectacle={selectedSpectacle}
+          setShowModal={setShowModal}
+          currentRoll={ticketStock?.currentRoll ?? null}
+          onSaleComplete={handleSaleComplete}
+        />
+      )}
       {showModalEdit && <ScheduleViewEditModal selectedSpectacle={selectedSpectacle} setShowModalEdit={setShowModalEdit} onConfirm={editSpectacle} />}
+      {scheduleLoading ? (
+        <p className="app-status app-status--loading">Se încarcă programul...</p>
+      ) : (
       <ul className="program__list">
         {scheduleData.map(item => {
+          const soldCount = soldBySchedule[item.id] ?? 0;
+          const isPendingDelete = pendingDeleteId === item.id;
+
           return (
             <li className="program__item" key={item.id} onClick={() => (setShowModal(true), setSelectedSpectacle(item))}>
               <h3 className="program__item-title">{item.title} <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span></h3>
               <div className='program__item-info'>
                 <div className='program__item-time'>Ora: {item.time}</div>
                 <div className="program__item-date">Data: {formateDate(item.date)}</div>
-                <button className='program__item-button' onClick={(e) => (e.stopPropagation(), setShowModalEdit(true), setSelectedSpectacle(item))}>Editeza</button>
-                <button className='program__item-button' onClick={(e) => (e.stopPropagation(), removeSpectacle(item.id))}>Sterge</button>
+                <div className="program__item-sold">
+                  Vândute: {soldCount} {soldCount === 1 ? 'bilet' : 'bilete'}
+                </div>
+                <button className='program__item-button' onClick={(e) => (e.stopPropagation(), setShowModalEdit(true), setSelectedSpectacle(item))}>Editează</button>
+                <button
+                  className={`program__item-button ${isPendingDelete ? 'program__item-button--confirm' : ''}`}
+                  onClick={(e) => (e.stopPropagation(), removeSpectacle(item.id))}
+                >
+                  {isPendingDelete ? 'Confirmați?' : 'Șterge'}
+                </button>
+                {isPendingDelete && (
+                  <button
+                    className="program__item-button program__item-button--cancel"
+                    onClick={(e) => (e.stopPropagation(), setPendingDeleteId(null))}
+                  >
+                    Anulează
+                  </button>
+                )}
               </div>
             </li>
           )
         })}
       </ul>
+      )}
     </div>
   )
 }

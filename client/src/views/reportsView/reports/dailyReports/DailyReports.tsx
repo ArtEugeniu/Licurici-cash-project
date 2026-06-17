@@ -1,18 +1,10 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
+import { scheduleApi } from '../../../../api/scheduleApi';
+import type { Sale, ScheduleItem } from '../../../../api/types';
 import { generateDailyReportPDF } from '../../../../utils/generateDailyReportPDF';
 import type { DailyReportData } from "../../../../utils/generateDailyReportPDF";
 import './DailyReports.scss';
 
-type Sale = {
-  id: string;
-  quantity: number;
-  total_sum: number;
-  payment_method: string;
-  created_at: string;
-  type: string;
-  title: string;
-  schedule_id: string
-};
 
 interface DailyReportsProps {
   sales: Sale[]
@@ -35,9 +27,8 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   useEffect(() => {
     // fetch schedules once and build a map schedule_id -> date (YYYY-MM-DD)
     let mounted = true;
-    fetch('http://localhost:5000/api/schedule')
-      .then(res => res.json())
-      .then((rows: any[]) => {
+    scheduleApi.getAll()
+      .then((rows: ScheduleItem[]) => {
         if (!mounted) return;
         const m: Record<string, {date: string, time?: string}> = {};
         for (const r of rows) {
@@ -83,12 +74,63 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   const totalTickets = filteredSales.reduce((sum, s) => sum + s.quantity, 0);
   const totalAmount = filteredSales.reduce((sum, s) => sum + s.total_sum, 0);
 
+  const formatScheduleLabel = (scheduleId: string) => {
+    const sched = schedulesMap[String(scheduleId || '').trim()];
+    if (!sched?.date) return '';
+    const parts = String(sched.date).split('-');
+    const datePart = parts.length >= 3 ? `${parts[2]}.${parts[1]}.${parts[0]}` : sched.date;
+    const timePart = sched.time ? ` ${String(sched.time).split(':').slice(0, 2).join(':')}` : '';
+    return `${datePart}${timePart}`;
+  };
+
+  const salesBySpectacle = filteredSales.reduce<
+    Record<string, {
+      title: string;
+      scheduleLabel: string;
+      tickets: number;
+      amount: number;
+      cashTickets: number;
+      cashAmount: number;
+      cardTickets: number;
+      cardAmount: number;
+    }>
+  >((acc, sale) => {
+    const key = sale.schedule_id || sale.title;
+    if (!acc[key]) {
+      acc[key] = {
+        title: sale.title,
+        scheduleLabel: sale.schedule_id ? formatScheduleLabel(sale.schedule_id) : '',
+        tickets: 0,
+        amount: 0,
+        cashTickets: 0,
+        cashAmount: 0,
+        cardTickets: 0,
+        cardAmount: 0,
+      };
+    }
+    acc[key].tickets += sale.quantity;
+    acc[key].amount += sale.total_sum;
+
+    if (sale.payment_method === 'cash') {
+      acc[key].cashTickets += sale.quantity;
+      acc[key].cashAmount += sale.total_sum;
+    } else if (sale.payment_method === 'card') {
+      acc[key].cardTickets += sale.quantity;
+      acc[key].cardAmount += sale.total_sum;
+    }
+
+    return acc;
+  }, {});
+
+  const spectacleSummaries = Object.values(salesBySpectacle).sort((a, b) =>
+    a.title.localeCompare(b.title, 'ro')
+  );
 
   return (
     <div className="daily">
       <h2 className="daily__title">Rapoarte zilnice</h2>
       <label className="daily__date">
-        Selectati data:{" "}
+        Selectați data:{" "}
         <input
           className="daily__date-input"
           type="date"
@@ -130,6 +172,25 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
           </tbody>
         </table>
       </div>
+      {spectacleSummaries.length > 0 && (
+        <div className="daily__spectacle-summary">
+          <h3>Vânzări pe spectacole:</h3>
+          <ul className="daily__spectacle-list">
+            {spectacleSummaries.map((item) => (
+              <li key={`${item.title}-${item.scheduleLabel}`} className="daily__spectacle-item">
+                <strong>{item.title}</strong>
+                {item.scheduleLabel && <span className="daily__spectacle-time"> ({item.scheduleLabel})</span>}
+                {' — '}
+                {item.tickets} {item.tickets === 1 ? 'bilet' : 'bilete'} — {item.amount} MDL
+                <span className="daily__spectacle-payment">
+                  {' '}(numerar: {item.cashTickets} {item.cashTickets === 1 ? 'bilet' : 'bilete'} — {item.cashAmount} MDL,
+                  {' '}card: {item.cardTickets} {item.cardTickets === 1 ? 'bilet' : 'bilete'} — {item.cardAmount} MDL)
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
       <div className="daily__summary">
         <h3>Sumar:</h3>
         <p><strong>Numerar:</strong> {totalCashTickets} bilete — {totalCashAmount} MDL</p>
@@ -144,6 +205,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
             const reportData: DailyReportData = {
               selectedDate,
               filteredSales,
+              spectacleSummaries,
               totalCashTickets,
               totalCashAmount,
               totalCardTickets,

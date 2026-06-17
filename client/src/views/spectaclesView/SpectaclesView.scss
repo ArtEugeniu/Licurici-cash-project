@@ -63,8 +63,11 @@
   }
 
   &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+
     & button {
-      margin-right: 20px;
       background-color: #5300ff;
       padding: 5px 10px;
       border-radius: 10px;
@@ -80,6 +83,16 @@
         opacity: 0.4
       }
     }
+  }
+
+  &__delete--confirm {
+    background-color: #b00020 !important;
+    color: #fff !important;
+  }
+
+  &__cancel-delete {
+    background-color: #666 !important;
+    color: #fff !important;
   }
 
   &__new {

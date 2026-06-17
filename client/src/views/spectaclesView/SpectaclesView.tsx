@@ -1,15 +1,13 @@
-import './Spectaclesview.scss';
+﻿import './Spectaclesview.scss';
 import { useEffect, useState } from 'react';
+import { getApiErrorMessage } from '../../api/client';
+import { scheduleApi } from '../../api/scheduleApi';
+import { spectaclesApi } from '../../api/spectaclesApi';
+import type { Spectacle } from '../../api/types';
+import { notifyError, notifySuccess } from '../../utils/toast';
 import SpectaclesViewModal from './SpectacleViewModal';
 import SpectaclesViewAddModal from './SpectaclesViewAddModal';
 import { v4 as uuid } from 'uuid';
-
-interface Spectacles {
-  id: string;
-  title: string;
-  created_at: string;
-  type: string;
-}
 
 interface ScheduleData {
   title: string
@@ -19,120 +17,112 @@ interface ScheduleData {
 }
 
 const SpectaclesView: React.FC = () => {
-
-  const [spectacles, setSpectacles] = useState<Spectacles[]>([]);
+  const [spectacles, setSpectacles] = useState<Spectacle[]>([]);
   const [showModalNew, setShowModalNew] = useState<boolean>(false);
   const [showModalAdd, setShowModalAdd] = useState<boolean>(false);
   const [search, setSearch] = useState<string>('');
-  const [filteredSpectacles, setFilteredSpectacles] = useState<Spectacles[]>([]);
+  const [filteredSpectacles, setFilteredSpectacles] = useState<Spectacle[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [isAddingToSchedule, setIsAddingToSchedule] = useState<boolean>(false);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const [scheduleData, setScheduleData] = useState<ScheduleData>({
     title: '',
     time: '',
     type: '',
     date: ''
-  })
+  });
 
-  useEffect(() => {
-    const fetchSpectacles = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/api/spectacles');
-        const data = await response.json();
-        setSpectacles(data)
-      } catch (error) {
-        alert('Eroare la încărcarea spectacolelor:' + error)
-      }
+  const fetchSpectacles = async () => {
+    setLoading(true);
+
+    try {
+      const data = await spectaclesApi.getAll();
+      setSpectacles(data);
+    } catch (error) {
+      notifyError(getApiErrorMessage(error, 'Eroare la încărcarea spectacolelor'));
+    } finally {
+      setLoading(false);
     }
-
+  };
+  useEffect(() => {
     fetchSpectacles();
   }, []);
 
   useEffect(() => {
     const filtered = spectacles.filter(item => {
       return item.title.toLocaleLowerCase().includes(search.toLocaleLowerCase());
-    })
+    });
     setFilteredSpectacles(search === '' ? spectacles : filtered);
-  }, [spectacles, search])
+  }, [spectacles, search]);
 
   const handleAddSpectacle = async (title: string, type: string) => {
-    const randomId = uuid();
-    const response = await fetch('http://localhost:5000/api/spectacles', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ id: randomId, title, type })
-    });
-
-    const data = await response.json();
-
-
-    setSpectacles(data);
+    try {
+      const data = await spectaclesApi.create({ id: uuid(), title, type });
+      setSpectacles(data);
+      setShowModalNew(false);
+      notifySuccess('Spectacolul a fost adăugat');
+    } catch (error) {
+      notifyError(getApiErrorMessage(error, 'Eroare la adăugarea spectacolului'));
+    }
   };
-
   const handleDeleteSpectacle = async (id: string) => {
-
-    const confirmed = window.confirm('Sunteti sigur ca doriti sa stergeti acest spectacol?');
-    if (!confirmed) return;
-
-    const response = await fetch(`http://localhost:5000/api/spectacles/${id}`, {
-      method: 'DELETE'
-    });
-
-    const data = await response.json();
-    setSpectacles(data);
-  }
-
-  const handleCancelAddToSchedule = async () => {
-    setShowModalAdd(false)
-  }
-
-  const handleAddToSchedule = async () => {
-    const date = scheduleData.date;
-    const time = scheduleData.time;
-    const randomId = uuid();
-
-    if (!isValidDate(String(date))) {
-      alert('Introduceți dată corectă')
-      return;
-    }
-
-    if (isDateInPast(String(date))) {
-      alert('Introduceți dată corectă')
-      return;
-    }
-
-    if (!isValidTime(String(time))) {
-      alert('Introduceți ora corectă');
+    if (pendingDeleteId !== id) {
+      setPendingDeleteId(id);
       return;
     }
 
     try {
-     const response = await fetch('http://localhost:5000/api/schedule', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: randomId,
-          title: scheduleData.title,
-          type: scheduleData.type,
-          date: scheduleData.date,
-          time: scheduleData.time
-        })
+      const data = await spectaclesApi.remove(id);
+      setSpectacles(data);
+      notifySuccess('Spectacolul a fost șters');
+    } catch (error) {
+      notifyError(getApiErrorMessage(error, 'Eroare la ștergerea spectacolului'));
+    } finally {
+      setPendingDeleteId(null);
+    }
+  };
+  const handleCancelAddToSchedule = () => {
+    setShowModalAdd(false);
+  };
+
+  const handleAddToSchedule = async () => {
+    const date = scheduleData.date;
+    const time = scheduleData.time;
+
+    if (!isValidDate(String(date))) {
+      notifyError('Introduceți data corectă');
+      return;
+    }
+
+    if (isDateInPast(String(date))) {
+      notifyError('Introduceți data corectă');
+      return;
+    }
+
+    if (!isValidTime(String(time))) {
+      notifyError('Introduceți ora corectă');
+      return;
+    }
+
+    setIsAddingToSchedule(true);
+
+    try {
+      await scheduleApi.create({
+        id: uuid(),
+        title: scheduleData.title,
+        type: scheduleData.type,
+        date: scheduleData.date,
+        time: scheduleData.time,
       });
 
-      if(!response.ok) {
-        const errorData = await response.json();
-        alert(errorData.error);
-        return
-      }
-
       setShowModalAdd(false);
+      notifySuccess('Spectacolul a fost adăugat în program');
     } catch (error) {
-      alert('Eroare la adaugarea spectacolului in program: ' + error)
+      notifyError(getApiErrorMessage(error, 'Eroare la adăugarea spectacolului în program'));
+    } finally {
+      setIsAddingToSchedule(false);
     }
-  }
-
+  };
   function isValidDate(dateStr: string) {
     if (!dateStr) return false;
 
@@ -148,10 +138,7 @@ const SpectaclesView: React.FC = () => {
 
     const inputDate = new Date(dateStr);
     const today = new Date();
-
-
     today.setHours(0, 0, 0, 0);
-
 
     return inputDate < today;
   }
@@ -163,7 +150,6 @@ const SpectaclesView: React.FC = () => {
     return regex.test(timeStr);
   }
 
-
   return (
     <div className="spectacles">
       <h2 className="spectacles__title">
@@ -171,28 +157,52 @@ const SpectaclesView: React.FC = () => {
       </h2>
       <button className='spectacles__new' onClick={() => setShowModalNew(true)}>Spectacol nou</button>
       <label className='spectacles__search-label' htmlFor="spectacle-search">
-        <input className='spectacles__search' type="search" id="spectacle-search" placeholder='Cauta spectacol' onChange={(e) => setSearch(e.target.value)} value={search} />
+        <input className='spectacles__search' type="search" id="spectacle-search" placeholder='Caută spectacol' onChange={(e) => setSearch(e.target.value)} value={search} />
       </label>
       {showModalNew && <SpectaclesViewModal onCancel={() => setShowModalNew(false)} onAdd={handleAddSpectacle} />}
-      {showModalAdd && <SpectaclesViewAddModal scheduleData={scheduleData} setScheduleData={setScheduleData} onAccept={handleAddToSchedule} onCancel={handleCancelAddToSchedule} />}
-      <ul className="spectacles__list">
-        {filteredSpectacles.map(item => {
-          return (
-            <li className="spectacles__item" key={item.id}>
-              <h3 className="spectacles__name">{item.title} <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span></h3>
-              <div className="spectacles__actions">
-                <button className="spectacles__add" onClick={() => {
-                  setShowModalAdd(true);
-                  setScheduleData({ title: item.title, type: item.type, date: '', time: '' })
-                }}>Adaugă</button>
-                <button className="spectacles__delete" onClick={() => handleDeleteSpectacle(item.id)}>Șterge</button>
-              </div>
-            </li>
-          )
-        })}
-      </ul>
+      {showModalAdd && (
+        <SpectaclesViewAddModal
+          scheduleData={scheduleData}
+          setScheduleData={setScheduleData}
+          onAccept={handleAddToSchedule}
+          onCancel={handleCancelAddToSchedule}
+          isSubmitting={isAddingToSchedule}
+        />
+      )}
+      {loading ? (
+        <p className="app-status app-status--loading">Se încarcă spectacolele...</p>
+      ) : (
+        <ul className="spectacles__list">
+          {filteredSpectacles.map(item => {
+            const isPendingDelete = pendingDeleteId === item.id;
+
+            return (
+              <li className="spectacles__item" key={item.id}>
+                <h3 className="spectacles__name">{item.title} <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span></h3>
+                <div className="spectacles__actions">
+                  <button className="spectacles__add" onClick={() => {
+                    setShowModalAdd(true);
+                    setScheduleData({ title: item.title, type: item.type, date: '', time: '' });
+                  }}>Adaugă</button>
+                  <button
+                    className={`spectacles__delete ${isPendingDelete ? 'spectacles__delete--confirm' : ''}`}
+                    onClick={() => handleDeleteSpectacle(item.id)}
+                  >
+                    {isPendingDelete ? 'Confirmați?' : 'Șterge'}
+                  </button>
+                  {isPendingDelete && (
+                    <button className="spectacles__cancel-delete" onClick={() => setPendingDeleteId(null)}>
+                      Anulează
+                    </button>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      )}
     </div>
-  )
-}
+  );
+};
 
 export default SpectaclesView;
