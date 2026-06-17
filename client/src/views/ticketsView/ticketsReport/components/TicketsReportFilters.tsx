@@ -13,13 +13,23 @@ const TicketsReportFilters: React.FC<TicketsReportFiltersProps> = ({
 }) => {
   return (
     <div className="ticketsReport__filters">
-      <label>
-        De la:
-        <input type="date" value={startDate} onChange={e => onStartDateChange(e.target.value)} />
+      <label className="field">
+        <span className="field__label">De la</span>
+        <input
+          className="input input--inline"
+          type="date"
+          value={startDate}
+          onChange={(e) => onStartDateChange(e.target.value)}
+        />
       </label>
-      <label>
-        Până la:
-        <input type="date" value={endDate} onChange={e => onEndDateChange(e.target.value)} />
+      <label className="field">
+        <span className="field__label">Până la</span>
+        <input
+          className="input input--inline"
+          type="date"
+          value={endDate}
+          onChange={(e) => onEndDateChange(e.target.value)}
+        />
       </label>
     </div>
   );

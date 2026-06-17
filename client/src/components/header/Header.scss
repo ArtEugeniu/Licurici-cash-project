@@ -1,10 +1,107 @@
+@use '../../assets/styles/variables' as *;
+
 .header {
-  background-color: #5300ff;
-  padding: 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: $space-4;
+  min-height: $header-height;
+  padding: $space-4 $space-6;
+  background-color: $color-surface;
+  border-bottom: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+
+  &__brand {
+    display: flex;
+    align-items: center;
+    gap: $space-3;
+    min-width: 0;
+  }
+
+  &__mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: $radius-md;
+    background: linear-gradient(135deg, $color-primary 0%, $color-primary-dark 100%);
+    color: $color-accent;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-bold;
+    flex-shrink: 0;
+  }
+
+  &__titles {
+    min-width: 0;
+  }
 
   &__logo {
-    font-size: 44px;
-    color: #ccc;
-    margin-left: 20px;
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-text;
+    line-height: $line-height-tight;
+  }
+
+  &__tagline {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+    margin-top: 2px;
+  }
+
+  &__meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: $space-2;
+    text-align: right;
+  }
+
+  &__date {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-text-muted;
+    text-transform: capitalize;
+  }
+
+  &__status {
+    display: inline-flex;
+    align-items: center;
+    gap: $space-2;
+    padding: $space-1 $space-3;
+    border-radius: $radius-full;
+    background-color: $color-success-bg;
+    color: $color-success;
+    font-size: $font-size-xs;
+    font-weight: $font-weight-semibold;
+
+    &--offline {
+      background-color: $color-danger-bg;
+      color: $color-danger;
+    }
+  }
+
+  &__status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: currentColor;
+    flex-shrink: 0;
+  }
+
+  &__status-text {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: $space-4;
+
+    &__meta {
+      align-items: flex-start;
+      text-align: left;
+      width: 100%;
+    }
   }
 }

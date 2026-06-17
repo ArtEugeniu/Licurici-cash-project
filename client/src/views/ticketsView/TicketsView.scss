@@ -1,43 +1,7 @@
+@use '../../assets/styles/variables' as *;
+
 .tickets {
-  width: 100%;
-  padding: 0 25px;
-
-  &__title {
-    font-size: 40px;
-    text-align: center;
-    padding: 25px 0 10px;
-  }
-
-  &__tabs {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-    justify-content: center;
-    margin-bottom: 24px;
-  }
-
-  &__tab {
-    padding: 10px 20px;
-    border-radius: 10px;
-    background-color: #e8e8e8;
-    color: #222;
-    font-size: 18px;
-    font-weight: 500;
-    transition: background-color 0.2s, color 0.2s, opacity 0.2s;
-
-    &:hover {
-      opacity: 0.85;
-    }
-
-    &--active {
-      background-color: #5300ff;
-      color: #fff;
-    }
-  }
-
   &__panel {
-    padding: 10px 0 30px;
-
     .tickets__integrity-title,
     .tickets__entry-form:not(.tickets__entry-form--confirm) .tickets__entry-title,
     .tickets__report-period > h3,
@@ -50,295 +14,100 @@
     }
 
     .tickets__entry-report {
-      margin-bottom: 30px;
+      margin-bottom: $space-8;
     }
 
     .ticketsReport {
-      padding-bottom: 30px;
+      padding-bottom: $space-8;
     }
   }
 
   &__entry-title {
-    font-size: 24px;
+    font-size: $font-size-xl;
   }
 
   &__integrity {
-    margin-bottom: 40px;
-    padding: 16px;
-    border: 1px solid #d0d0d0;
-    border-radius: 8px;
-    background-color: #fff;
+    margin-bottom: $space-6;
   }
 
   &__integrity-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
-    margin-bottom: 12px;
+    gap: $space-4;
+    margin-bottom: $space-3;
   }
 
   &__integrity-title {
-    font-size: 22px;
-  }
-
-  &__integrity-button {
-    min-width: 120px;
-    padding: 8px 14px;
-    border-radius: 8px;
-    background-color: #5300ff;
-    color: #fff;
-    font-size: 16px;
-    transition: opacity 0.3s;
-
-    &:disabled {
-      cursor: wait;
-      opacity: 0.6;
-    }
-
-    &:hover:not(:disabled) {
-      opacity: 0.8;
-    }
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
   }
 
   &__integrity-error {
-    color: #b00020;
-    font-weight: 500;
+    color: $color-danger;
+    font-weight: $font-weight-medium;
   }
 
   &__integrity-status {
-    margin-bottom: 10px;
-    font-weight: 700;
+    margin-bottom: $space-3;
+    font-weight: $font-weight-bold;
   }
 
   &__integrity-status-ok {
-    color: #0f7a31;
+    color: $color-success;
   }
 
   &__integrity-status-error {
-    color: #b00020;
-  }
-
-  &__integrity-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 14px;
-
-    th,
-    td {
-      padding: 8px 10px;
-      border: 1px solid #d8d8d8;
-      text-align: left;
-    }
-
-    thead {
-      background-color: #5300ff;
-      color: #fff;
-    }
-  }
-
-  &__integrity-details-button {
-    padding: 5px 10px;
-    border-radius: 6px;
-    background-color: #ece4ff;
-    color: #33009b;
-    font-size: 13px;
-    font-weight: 700;
-    transition: opacity 0.3s;
-
-    &:hover {
-      opacity: 0.75;
-    }
+    color: $color-danger;
   }
 
   &__integrity-details {
-    margin-top: 14px;
-    overflow-x: auto;
+    margin-top: $space-4;
   }
 
   &__integrity-details-title {
-    margin-bottom: 8px;
-    font-size: 16px;
-  }
-
-  &__integrity-details-table {
-    min-width: 620px;
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fbfbfb;
-    font-size: 13px;
-
-    th,
-    td {
-      padding: 7px 9px;
-      border: 1px solid #dddddd;
-      text-align: left;
-      white-space: nowrap;
-    }
-
-    thead {
-      background-color: #eeeeee;
-      color: #222;
-    }
+    margin-bottom: $space-2;
+    font-size: $font-size-base;
+    font-weight: $font-weight-semibold;
   }
 
   &__entry-form {
     display: flex;
     flex-direction: column;
-    gap: 25px;
-    margin-bottom: 30px;
-  }
-
-  &__entry-form label {
-    font-size: 18px;
-  }
-
-  &__entry-form input {
-    background-color: #cbcbcb;
-    padding: 5px;
-    border-radius: 10px;
-  }
-
-  &__entry-button {
-    max-width: 200px;
-    background-color: #5300ff;
-    padding: 10px;
-    font-size: 20px;
-    color: #fff;
-    border-radius: 10px;
-    transition: opacity 0.3s;
-
-    &:disabled {
-      opacity: 0.55;
-      cursor: not-allowed;
-    }
-
-    &:hover:not(:disabled) {
-      opacity: 0.8;
-    }
-
-    &:active:not(:disabled) {
-      opacity: 0.5;
-    }
-
-    &--secondary {
-      background-color: #666;
-    }
+    gap: $space-4;
+    margin-bottom: $space-6;
   }
 
   &__entry-confirm-actions {
     display: flex;
-    gap: 12px;
+    gap: $space-3;
     flex-wrap: wrap;
   }
 
   &__entry-form--confirm p {
-    font-size: 18px;
-    margin: 4px 0;
-  }
-
-  &__entry-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 16px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.6);
-    border-radius: 8px;
-
-    th,
-    td {
-      padding: 12px 16px;
-      text-align: center;
-    }
-
-    th {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-      background-color: #5300ff;
-      color: #fff;
-    }
-
-    thead {
-      background-color: #5300ff;
-    }
-  }
-
-  tbody tr:nth-child(even) {
-    background-color: #c2c2c2;
-  }
-
-  &__entry-report {
-    max-height: 330px;
-    margin-bottom: 80px;
-    overflow: auto;
-    border-radius: 8px;
+    font-size: $font-size-base;
+    margin: $space-1 0;
   }
 
   &__period-preview {
-    margin-top: 18px;
-    margin-bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
   }
 
   &__period-preview-title {
-    margin-bottom: 10px;
-    font-size: 18px;
-  }
-
-  &__period-preview-message {
-    margin-top: 12px;
-    font-weight: 500;
-  }
-
-  &__period-preview-error {
-    margin-top: 12px;
-    color: #b00020;
-    font-weight: 600;
-  }
-
-  &__period-preview-table-wrapper {
-    margin-bottom: 14px;
-    overflow-x: auto;
-    border-radius: 8px;
-    box-shadow: 0 0 6px rgba(0, 0, 0, 0.25);
-  }
-
-  &__period-preview-table {
-    min-width: 640px;
-    width: 100%;
-    border-collapse: collapse;
-    background-color: #fff;
-    font-size: 14px;
-
-    th,
-    td {
-      padding: 8px 10px;
-      border: 1px solid #dddddd;
-      text-align: left;
-    }
-
-    thead {
-      background-color: #5300ff;
-      color: #fff;
-    }
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
   }
 
   &__period-preview-total-row {
-    font-weight: 700;
-    background-color: #eeeeee;
+    font-weight: $font-weight-bold;
+    background-color: $color-surface-muted;
   }
 
   &__period-preview-summary {
-    padding: 12px;
-    border-radius: 8px;
-    background-color: #f2f2f2;
-    font-size: 14px;
-
     p {
-      margin: 5px 0;
       overflow-wrap: anywhere;
-      font-weight: 500;
     }
   }
-
 }

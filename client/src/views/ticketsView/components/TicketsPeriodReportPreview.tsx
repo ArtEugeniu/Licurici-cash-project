@@ -37,11 +37,11 @@ const formatAmountBreakdown = (
 
 const TicketsPeriodReportPreview: React.FC<TicketsPeriodReportPreviewProps> = ({ data, loading, error }) => {
   if (loading) {
-    return <p className="tickets__period-preview-message">Se încarcă previzualizarea...</p>;
+    return <p className="app-status app-status--loading">Se încarcă previzualizarea...</p>;
   }
 
   if (error) {
-    return <p className="tickets__period-preview-error">{error}</p>;
+    return <p className="banner banner--danger">{error}</p>;
   }
 
   if (!data) return null;
@@ -57,8 +57,8 @@ const TicketsPeriodReportPreview: React.FC<TicketsPeriodReportPreviewProps> = ({
     <div className="tickets__period-preview">
       <h4 className="tickets__period-preview-title">Previzualizare PDF</h4>
 
-      <div className="tickets__period-preview-table-wrapper">
-        <table className="tickets__period-preview-table">
+      <div className="table-scroll">
+        <table className="table">
           <thead>
             <tr>
               <th>Data</th>
@@ -116,8 +116,8 @@ const TicketsPeriodReportPreview: React.FC<TicketsPeriodReportPreviewProps> = ({
         </table>
       </div>
 
-      <div className="tickets__period-preview-table-wrapper">
-        <table className="tickets__period-preview-table">
+      <div className="table-scroll">
+        <table className="table table--center">
           <thead>
             <tr>
               <th>Tip / Metodă</th>
@@ -160,7 +160,7 @@ const TicketsPeriodReportPreview: React.FC<TicketsPeriodReportPreviewProps> = ({
         </table>
       </div>
 
-      <div className="tickets__period-preview-summary">
+      <div className="report-summary tickets__period-preview-summary">
         <p>Total primite: {data.totals.received_total} bilete</p>
         <p>
           Total bilete vândute: {data.totals.sold_total} bilete

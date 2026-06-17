@@ -68,17 +68,17 @@ const TicketsView: React.FC = () => {
   };
 
   return (
-    <div className="tickets">
-      <h2 className="tickets__title">Rapoarte Bilete</h2>
+    <div className="tickets page">
+      <h2 className="page-title">Rapoarte Bilete</h2>
 
-      <div className="tickets__tabs" role="tablist" aria-label="Secțiuni rapoarte bilete">
+      <div className="tabs" role="tablist" aria-label="Secțiuni rapoarte bilete">
         {ticketTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             role="tab"
             aria-selected={activeTab === tab.id}
-            className={`tickets__tab ${activeTab === tab.id ? 'tickets__tab--active' : ''}`}
+            className={`tabs__tab ${activeTab === tab.id ? 'tabs__tab--active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -86,7 +86,7 @@ const TicketsView: React.FC = () => {
         ))}
       </div>
 
-      <div className="tickets__panel" role="tabpanel">
+      <div className="tickets__panel tabs__panel" role="tabpanel">
         {renderActivePanel()}
       </div>
     </div>

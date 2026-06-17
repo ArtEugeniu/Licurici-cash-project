@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import EmptyState from '../../../../components/emptyState/EmptyState';
 import { getApiErrorMessage } from '../../../../api/client';
 import { scheduleApi } from '../../../../api/scheduleApi';
 import type { Sale } from '../../../../api/types';
@@ -98,58 +99,89 @@ const PeriodReports: React.FC<PeriodReportsProps> = ({ sales }) => {
     }
   };
 
+  const formatDisplayDate = (value: string) => value.split('-').reverse().join('-');
+  const periodLabel = `${formatDisplayDate(dateFrom)} – ${formatDisplayDate(dateTo)}`;
+
   return (
-    <div className="period">
-      <h2 className="period__title">Raport pentru perioada</h2>
-      <div className="period__dates">
-        <label htmlFor="" className="period__from">
-          De la: <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+    <div className="period report-panel">
+      <div className="report-toolbar">
+        <label className="field">
+          <span className="field__label">De la</span>
+          <input
+            className="input input--inline"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
         </label>
-        <label htmlFor="" className="period__to">
-          Până la: <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        <label className="field">
+          <span className="field__label">Până la</span>
+          <input
+            className="input input--inline"
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
         </label>
       </div>
 
-      <table className="period__table">
-        <thead>
-          <tr>
-            <th>Perioada</th>
-            <th>Nr. bilete numerar</th>
-            <th>Suma bilete numerar</th>
-            <th>Nr. bilete card</th>
-            <th>Suma bilete card</th>
-            <th>Nr. bilete total</th>
-            <th>Suma bilete total</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td>{dateFrom.split('-').reverse().join('-')} - {dateTo.split('-').reverse().join('-')}</td>
-            <td>{cashTickets}</td>
-            <td>{cashSum}</td>
-            <td>{cardTickets}</td>
-            <td>{cardSum}</td>
-            <td>{totalTickets}</td>
-            <td>{totalSum}</td>
-          </tr>
-        </tbody>
-      </table>
+      {totalTickets === 0 ? (
+        <EmptyState
+          title="Nu există vânzări în această perioadă"
+          message={`Nu au fost înregistrate vânzări pentru ${periodLabel}.`}
+        />
+      ) : (
+        <>
+          <div className="table-scroll">
+            <table className="table table--center">
+              <thead>
+                <tr>
+                  <th>Perioada</th>
+                  <th>Nr. bilete numerar</th>
+                  <th>Suma bilete numerar</th>
+                  <th>Nr. bilete card</th>
+                  <th>Suma bilete card</th>
+                  <th>Nr. bilete total</th>
+                  <th>Suma bilete total</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>{periodLabel}</td>
+                  <td>{cashTickets}</td>
+                  <td>{cashSum}</td>
+                  <td>{cardTickets}</td>
+                  <td>{cardSum}</td>
+                  <td>{totalTickets}</td>
+                  <td>{totalSum}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
 
-      <button className="period__pdf-button" onClick={handleDownloadPDF}>Descarcă PDF</button>
-      <button
-        className="period__pdf-button"
-        onClick={handleDownloadExcel}
-        disabled={excelLoading}
-      >
-        {excelLoading ? 'Se generează...' : 'Descarcă Excel vânzări'}
-      </button>
-      <button
-        className="period__pdf-button"
-        onClick={handleDownloadShortExcel}
-        disabled={shortExcelLoading}
-      >
-        {shortExcelLoading ? 'Se generează...' : 'Descarcă Excel scurt'}
-      </button>
+          <div className="report-actions">
+            <button className="btn" type="button" onClick={handleDownloadPDF}>
+              Descarcă PDF
+            </button>
+            <button
+              className="btn btn--secondary"
+              type="button"
+              onClick={handleDownloadExcel}
+              disabled={excelLoading}
+            >
+              {excelLoading ? 'Se generează...' : 'Descarcă Excel vânzări'}
+            </button>
+            <button
+              className="btn btn--secondary"
+              type="button"
+              onClick={handleDownloadShortExcel}
+              disabled={shortExcelLoading}
+            >
+              {shortExcelLoading ? 'Se generează...' : 'Descarcă Excel scurt'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   );
 };

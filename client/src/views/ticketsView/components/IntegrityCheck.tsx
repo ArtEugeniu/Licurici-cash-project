@@ -38,10 +38,10 @@ const IntegrityCheck: React.FC = () => {
     }
   };
   return (
-    <section className="tickets__integrity">
+    <section className="card tickets__integrity">
       <div className="tickets__integrity-header">
         <h3 className="tickets__integrity-title">Verificare bază</h3>
-        <button className="tickets__integrity-button" onClick={checkIntegrity} disabled={integrityLoading}>
+        <button className="btn" onClick={checkIntegrity} disabled={integrityLoading}>
           {integrityLoading ? 'Se verifică...' : 'Verifică'}
         </button>
       </div>
@@ -54,7 +54,7 @@ const IntegrityCheck: React.FC = () => {
             Status: {integrityResult.ok ? 'OK' : 'Probleme critice'}
           </p>
 
-          <table className="tickets__integrity-table">
+          <table className="table">
             <thead>
               <tr>
                 <th>Tip</th>
@@ -72,7 +72,7 @@ const IntegrityCheck: React.FC = () => {
                   <td>
                     {value > 0 && (
                       <button
-                        className="tickets__integrity-details-button"
+                        className="btn btn--ghost btn--sm"
                         onClick={() => setExpandedIntegrityKey(expandedIntegrityKey === key ? null : key)}
                       >
                         {expandedIntegrityKey === key ? 'Ascunde' : 'Detalii'}
@@ -89,7 +89,7 @@ const IntegrityCheck: React.FC = () => {
                   <td>
                     {value > 0 && (
                       <button
-                        className="tickets__integrity-details-button"
+                        className="btn btn--ghost btn--sm"
                         onClick={() => setExpandedIntegrityKey(expandedIntegrityKey === key ? null : key)}
                       >
                         {expandedIntegrityKey === key ? 'Ascunde' : 'Detalii'}
@@ -106,10 +106,12 @@ const IntegrityCheck: React.FC = () => {
               <h4 className="tickets__integrity-details-title">
                 Detalii: {integrityLabels[expandedIntegrityKey] || expandedIntegrityKey}
               </h4>
-              <IntegrityDetails
-                integrityResult={integrityResult}
-                expandedIntegrityKey={expandedIntegrityKey}
-              />
+              <div className="table-scroll">
+                <IntegrityDetails
+                  integrityResult={integrityResult}
+                  expandedIntegrityKey={expandedIntegrityKey}
+                />
+              </div>
             </div>
           )}
         </div>

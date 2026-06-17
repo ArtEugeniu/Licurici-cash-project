@@ -1,0 +1,300 @@
+@use 'variables' as *;
+
+// ─── Focus ring ──────────────────────────────────────────────────────────────
+@mixin focus-ring {
+  outline: 2px solid $color-primary;
+  outline-offset: 2px;
+}
+
+@mixin focus-visible {
+  &:focus-visible {
+    @include focus-ring;
+  }
+}
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+@mixin btn-base {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: $space-2;
+  padding: $space-2 $space-4;
+  border-radius: $radius-md;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  font-weight: $font-weight-medium;
+  line-height: $line-height-tight;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background-color $transition-base, color $transition-base,
+    border-color $transition-base, opacity $transition-base, box-shadow $transition-base;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  @include focus-visible;
+}
+
+@mixin btn-primary {
+  @include btn-base;
+  background-color: $color-primary;
+  color: $color-text-inverse;
+
+  &:hover:not(:disabled) {
+    background-color: $color-primary-hover;
+  }
+
+  &:active:not(:disabled) {
+    opacity: 0.9;
+  }
+}
+
+@mixin btn-secondary {
+  @include btn-base;
+  background-color: $color-surface;
+  color: $color-text;
+  border-color: $color-border-strong;
+
+  &:hover:not(:disabled) {
+    background-color: $color-surface-muted;
+    border-color: $color-text-muted;
+  }
+}
+
+@mixin btn-danger {
+  @include btn-base;
+  background-color: $color-danger;
+  color: $color-text-inverse;
+
+  &:hover:not(:disabled) {
+    background-color: #b91c1c;
+  }
+}
+
+@mixin btn-ghost {
+  @include btn-base;
+  background-color: transparent;
+  color: $color-text-muted;
+
+  &:hover:not(:disabled) {
+    background-color: $color-surface-muted;
+    color: $color-text;
+  }
+}
+
+@mixin btn-sm {
+  padding: $space-1 $space-3;
+  font-size: $font-size-sm;
+  border-radius: $radius-sm;
+}
+
+@mixin btn-lg {
+  padding: $space-3 $space-5;
+  font-size: $font-size-md;
+  border-radius: $radius-lg;
+}
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+@mixin input-base {
+  display: block;
+  width: 100%;
+  padding: $space-2 $space-3;
+  font-family: $font-family-base;
+  font-size: $font-size-base;
+  line-height: $line-height-base;
+  color: $color-text;
+  background-color: $color-surface;
+  border: 1px solid $color-border-strong;
+  border-radius: $radius-md;
+  transition: border-color $transition-base, box-shadow $transition-base;
+
+  &::placeholder {
+    color: $color-text-muted;
+  }
+
+  &:hover:not(:disabled) {
+    border-color: $color-text-muted;
+  }
+
+  &:focus {
+    border-color: $color-primary;
+    box-shadow: 0 0 0 3px rgba($color-primary, 0.15);
+    outline: none;
+  }
+
+  &:disabled {
+    background-color: $color-surface-muted;
+    cursor: not-allowed;
+    opacity: 0.7;
+  }
+}
+
+@mixin input-inline {
+  @include input-base;
+  width: auto;
+  display: inline-block;
+}
+
+// ─── Cards ───────────────────────────────────────────────────────────────────
+@mixin card-base {
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-sm;
+}
+
+@mixin card-interactive {
+  @include card-base;
+  transition: box-shadow $transition-base, transform $transition-base, border-color $transition-base;
+  cursor: pointer;
+
+  &:hover {
+    box-shadow: $shadow-md;
+    border-color: rgba($color-primary, 0.25);
+  }
+}
+
+@mixin card-padding($size: 'md') {
+  @if $size == 'sm' {
+    padding: $space-4;
+  } @else if $size == 'lg' {
+    padding: $space-6;
+  } @else {
+    padding: $space-5;
+  }
+}
+
+// ─── Tables ──────────────────────────────────────────────────────────────────
+@mixin table-base {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-base;
+  background-color: $color-surface;
+
+  th,
+  td {
+    padding: $space-3 $space-4;
+    text-align: left;
+    border-bottom: 1px solid $color-border;
+  }
+
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: $color-primary;
+    color: $color-text-inverse;
+    font-weight: $font-weight-semibold;
+    border-bottom: none;
+  }
+
+  tbody tr:nth-child(even) {
+    background-color: $color-surface-muted;
+  }
+
+  tbody tr:hover {
+    background-color: $color-primary-light;
+  }
+}
+
+@mixin table-wrapper {
+  overflow: auto;
+  border-radius: $radius-lg;
+  border: 1px solid $color-border;
+  box-shadow: $shadow-sm;
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+@mixin tabs-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-2;
+  justify-content: center;
+  margin-bottom: $space-6;
+}
+
+@mixin tab-item {
+  padding: $space-2 $space-5;
+  border-radius: $radius-md;
+  background-color: $color-surface-muted;
+  color: $color-text;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  border: 1px solid transparent;
+  transition: background-color $transition-base, color $transition-base,
+    border-color $transition-base;
+
+  &:hover {
+    background-color: $color-primary-light;
+    color: $color-primary-dark;
+  }
+
+  &--active {
+    background-color: $color-primary;
+    color: $color-text-inverse;
+    border-color: $color-primary;
+
+    &:hover {
+      background-color: $color-primary-hover;
+      color: $color-text-inverse;
+    }
+  }
+
+  @include focus-visible;
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+@mixin modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  background-color: rgba($color-text, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+@mixin modal-panel {
+  position: relative;
+  z-index: $z-modal;
+  width: min(520px, 100%);
+  max-height: calc(100vh - #{$space-8});
+  overflow-y: auto;
+  background-color: $color-surface;
+  border: 1px solid $color-border;
+  border-radius: $radius-xl;
+  box-shadow: $shadow-xl;
+  padding: $space-6;
+  animation: modal-slide-in 0.22s ease;
+}
+
+// ─── Page layout ─────────────────────────────────────────────────────────────
+@mixin page-container {
+  width: 100%;
+  max-width: $content-max-width;
+  margin: 0 auto;
+  padding: $space-6 $space-6 $space-10;
+}
+
+@mixin page-title {
+  font-size: $font-size-2xl;
+  font-weight: $font-weight-bold;
+  color: $color-text;
+  text-align: center;
+  margin-bottom: $space-6;
+  line-height: $line-height-tight;
+}
+
+// ─── Status banner ───────────────────────────────────────────────────────────
+@mixin status-banner($bg, $border, $text) {
+  text-align: center;
+  font-size: $font-size-md;
+  font-weight: $font-weight-medium;
+  padding: $space-3 $space-4;
+  margin-bottom: $space-5;
+  background-color: $bg;
+  border: 1px solid $border;
+  border-radius: $radius-lg;
+  color: $text;
+}

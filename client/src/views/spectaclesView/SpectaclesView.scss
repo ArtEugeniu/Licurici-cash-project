@@ -1,116 +1,49 @@
-.spectacles {
-  width: 100%;
-  padding: 0 25px;
+@use '../../assets/styles/variables' as *;
+@use '../../assets/styles/mixins' as *;
 
-  &__title {
-    font-size: 40px;
-    text-align: center;
-    padding: 25px 0;
-  }
+.spectacles {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
 
   &__search-label {
-    position: relative;
-
-    &::before {
-      content: '';
-      background-image: url('../../../public/images/search-icon.svg');
-      width: 22px;
-      height: 22px;
-      position: absolute;
-      background-position: center;
-      background-size: cover;
-      background-repeat: no-repeat;
-      top: 50%;
-      transform: translateY(-50%);
-      left: 8px;
-    }
+    max-width: 420px;
   }
 
   &__search {
-    border: 1px solid #000;
-    border-radius: 10px;
-    padding: 7px;
-    padding-left: 35px;
-    transition: box-shadow 0.3s;
-
-    &:hover {
-      box-shadow: 0 0 5px 0 #5300ff;
-    }
-
-    &:active {
-      box-shadow: 0 0 5px 2px #5300ff;
-
-    }
-
-    &:focus {
-      box-shadow: 0 0 5px 2px #5300ff;
-
-    }
+    width: 100%;
   }
 
-  &__name {
-    font-size: 25px;
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
   }
 
   &__item {
-    background-color: #ccc;
-    padding: 15px;
-    border-radius: 15px;
+    @include card-padding('md');
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    gap: $space-4;
+    flex-wrap: wrap;
+  }
+
+  &__name {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-text;
+
+    span {
+      color: $color-accent;
+      font-weight: $font-weight-medium;
+    }
   }
 
   &__actions {
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
-
-    & button {
-      background-color: #5300ff;
-      padding: 5px 10px;
-      border-radius: 10px;
-      color: #ccc;
-      font-size: 20px;
-      transition: opacity 0.3s;
-
-      &:hover {
-        opacity: 0.8;
-      }
-
-      &:active {
-        opacity: 0.4
-      }
-    }
-  }
-
-  &__delete--confirm {
-    background-color: #b00020 !important;
-    color: #fff !important;
-  }
-
-  &__cancel-delete {
-    background-color: #666 !important;
-    color: #fff !important;
-  }
-
-  &__new {
-    margin-right: 20px;
-    background-color: #5300ff;
-    padding: 5px 10px;
-    border-radius: 10px;
-    color: #ccc;
-    font-size: 20px;
-    margin-bottom: 25px;
-    transition: opacity 0.3s;
-
-    &:hover {
-      opacity: 0.8;
-    }
-
-    &:active {
-      opacity: 0.4
-    }
+    gap: $space-2;
   }
 }

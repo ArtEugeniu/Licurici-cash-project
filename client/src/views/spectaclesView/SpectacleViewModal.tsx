@@ -1,5 +1,5 @@
-import './SpectaclesViewModal.scss';
 import { useState } from 'react';
+import Modal from '../../components/modal/Modal';
 
 interface SpectaclesViewModalProps {
   onCancel: () => void;
@@ -7,7 +7,6 @@ interface SpectaclesViewModalProps {
 }
 
 const SpectaclesViewModal: React.FC<SpectaclesViewModalProps> = ({ onCancel, onAdd }) => {
-
   const [title, setTitle] = useState<string>('');
   const [type, setType] = useState<string>('Standart');
 
@@ -15,25 +14,37 @@ const SpectaclesViewModal: React.FC<SpectaclesViewModalProps> = ({ onCancel, onA
     if (!title.trim()) return;
     onAdd(title.trim(), type);
     onCancel();
-  }
+  };
 
   return (
-    <div className='modal'>
-      <div className='modal__content'>
-        <h3 className='modal__title'>Adaugă spectacol</h3>
-        <input className='modal__input' type="text" placeholder='Titlul spectacolului' value={title} onChange={(e) => setTitle(e.target.value)} />
-        <select className='modal__select' value={type} onChange={(e) => setType(e.target.value)}>
+    <Modal title="Adaugă spectacol" onClose={onCancel}>
+      <div className="field">
+        <label className="field__label" htmlFor="spectacle-title">Titlul spectacolului</label>
+        <input
+          className="input"
+          id="spectacle-title"
+          type="text"
+          placeholder="Titlul spectacolului"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+      </div>
+
+      <div className="field">
+        <label className="field__label" htmlFor="spectacle-type">Tip</label>
+        <select className="select" id="spectacle-type" value={type} onChange={(e) => setType(e.target.value)}>
           <option value="Standart">Standart</option>
           <option value="Premiera">Premieră</option>
           <option value="Special">Special</option>
         </select>
-        <div className='modal__buttons'>
-          <button onClick={onAccept}>Salvează</button>
-          <button onClick={onCancel}>Anulează</button>
-        </div>
       </div>
-    </div>
-  )
-}
+
+      <div className="modal__actions">
+        <button className="btn" onClick={onAccept}>Salvează</button>
+        <button className="btn btn--secondary" onClick={onCancel}>Anulează</button>
+      </div>
+    </Modal>
+  );
+};
 
 export default SpectaclesViewModal;

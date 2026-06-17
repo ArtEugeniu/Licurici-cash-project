@@ -1,5 +1,6 @@
 ﻿import './Spectaclesview.scss';
 import { useEffect, useState } from 'react';
+import EmptyState from '../../components/emptyState/EmptyState';
 import { getApiErrorMessage } from '../../api/client';
 import { scheduleApi } from '../../api/scheduleApi';
 import { spectaclesApi } from '../../api/spectaclesApi';
@@ -151,13 +152,19 @@ const SpectaclesView: React.FC = () => {
   }
 
   return (
-    <div className="spectacles">
-      <h2 className="spectacles__title">
-        Spectacole
-      </h2>
-      <button className='spectacles__new' onClick={() => setShowModalNew(true)}>Spectacol nou</button>
-      <label className='spectacles__search-label' htmlFor="spectacle-search">
-        <input className='spectacles__search' type="search" id="spectacle-search" placeholder='Caută spectacol' onChange={(e) => setSearch(e.target.value)} value={search} />
+    <div className="spectacles page">
+      <h2 className="page-title">Spectacole</h2>
+      <button className="btn btn--lg" onClick={() => setShowModalNew(true)}>Spectacol nou</button>
+      <label className="spectacles__search-label field" htmlFor="spectacle-search">
+        <span className="field__label">Caută spectacol</span>
+        <input
+          className="input spectacles__search"
+          type="search"
+          id="spectacle-search"
+          placeholder="Caută spectacol"
+          onChange={(e) => setSearch(e.target.value)}
+          value={search}
+        />
       </label>
       {showModalNew && <SpectaclesViewModal onCancel={() => setShowModalNew(false)} onAdd={handleAddSpectacle} />}
       {showModalAdd && (
@@ -171,27 +178,44 @@ const SpectaclesView: React.FC = () => {
       )}
       {loading ? (
         <p className="app-status app-status--loading">Se încarcă spectacolele...</p>
+      ) : filteredSpectacles.length === 0 ? (
+        <EmptyState
+          title={search ? 'Niciun rezultat' : 'Nu există spectacole'}
+          message={
+            search
+              ? `Nu s-a găsit niciun spectacol pentru „${search}".`
+              : 'Adăugați primul spectacol folosind butonul de mai sus.'
+          }
+        />
       ) : (
         <ul className="spectacles__list">
           {filteredSpectacles.map(item => {
             const isPendingDelete = pendingDeleteId === item.id;
 
             return (
-              <li className="spectacles__item" key={item.id}>
-                <h3 className="spectacles__name">{item.title} <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span></h3>
+              <li className="spectacles__item card" key={item.id}>
+                <h3 className="spectacles__name">
+                  {item.title}{' '}
+                  <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span>
+                </h3>
                 <div className="spectacles__actions">
-                  <button className="spectacles__add" onClick={() => {
-                    setShowModalAdd(true);
-                    setScheduleData({ title: item.title, type: item.type, date: '', time: '' });
-                  }}>Adaugă</button>
                   <button
-                    className={`spectacles__delete ${isPendingDelete ? 'spectacles__delete--confirm' : ''}`}
+                    className="btn btn--sm"
+                    onClick={() => {
+                      setShowModalAdd(true);
+                      setScheduleData({ title: item.title, type: item.type, date: '', time: '' });
+                    }}
+                  >
+                    Adaugă
+                  </button>
+                  <button
+                    className={`btn btn--sm ${isPendingDelete ? 'btn--danger' : 'btn--secondary'}`}
                     onClick={() => handleDeleteSpectacle(item.id)}
                   >
                     {isPendingDelete ? 'Confirmați?' : 'Șterge'}
                   </button>
                   {isPendingDelete && (
-                    <button className="spectacles__cancel-delete" onClick={() => setPendingDeleteId(null)}>
+                    <button className="btn btn--ghost btn--sm" onClick={() => setPendingDeleteId(null)}>
                       Anulează
                     </button>
                   )}

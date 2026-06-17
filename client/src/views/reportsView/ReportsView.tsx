@@ -59,17 +59,17 @@ const ReportsView: React.FC = () => {
   };
 
   return (
-    <div className="reports">
-      <h2 className="reports__title">Rapoarte vânzări</h2>
+    <div className="reports page">
+      <h2 className="page-title">Rapoarte vânzări</h2>
 
-      <div className="reports__tabs" role="tablist" aria-label="Tipuri de rapoarte">
+      <div className="tabs" role="tablist" aria-label="Tipuri de rapoarte">
         {reportTabs.map((tab) => (
           <button
             key={tab.id}
             type="button"
             role="tab"
             aria-selected={activeTab === tab.id}
-            className={`reports__tab ${activeTab === tab.id ? 'reports__tab--active' : ''}`}
+            className={`tabs__tab ${activeTab === tab.id ? 'tabs__tab--active' : ''}`}
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.label}
@@ -77,7 +77,7 @@ const ReportsView: React.FC = () => {
         ))}
       </div>
 
-      <div className="reports__panel" role="tabpanel">
+      <div className="reports__panel tabs__panel" role="tabpanel">
         {renderActiveReport()}
       </div>
     </div>

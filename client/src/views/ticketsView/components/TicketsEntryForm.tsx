@@ -55,27 +55,18 @@ const TicketsEntryForm: React.FC<TicketsEntryFormProps> = ({ onTicketsAdded }) =
       setIsSubmitting(false);
     }
   };
+
   if (showConfirmStep) {
     return (
-      <div className="tickets__entry-form tickets__entry-form--confirm">
+      <div className="card tickets__entry-form tickets__entry-form--confirm">
         <h3 className="tickets__entry-title">Confirmați primirea biletelor</h3>
         <p>Serii: <strong>{firstSerial} – {lastSerial}</strong></p>
         <p>Cantitate: <strong>{ticketsNumber} bilete</strong></p>
         <div className="tickets__entry-confirm-actions">
-          <button
-            className="tickets__entry-button"
-            type="button"
-            onClick={addSerial}
-            disabled={isSubmitting}
-          >
+          <button className="btn" type="button" onClick={addSerial} disabled={isSubmitting}>
             {isSubmitting ? 'Se adaugă...' : 'Finalizează'}
           </button>
-          <button
-            className="tickets__entry-button tickets__entry-button--secondary"
-            type="button"
-            onClick={() => setShowConfirmStep(false)}
-            disabled={isSubmitting}
-          >
+          <button className="btn btn--secondary" type="button" onClick={() => setShowConfirmStep(false)} disabled={isSubmitting}>
             Înapoi
           </button>
         </div>
@@ -84,13 +75,13 @@ const TicketsEntryForm: React.FC<TicketsEntryFormProps> = ({ onTicketsAdded }) =
   }
 
   return (
-    <form className="tickets__entry-form" onSubmit={handleSubmit}>
-      <h3 className="tickets__entry-title">
-        Primire Bilete
-      </h3>
-      <div>
-        <label htmlFor="tickets-number">Cantitatea biletelor primite: </label>
+    <form className="card tickets__entry-form" onSubmit={handleSubmit}>
+      <h3 className="tickets__entry-title">Primire Bilete</h3>
+
+      <div className="field">
+        <label className="field__label" htmlFor="tickets-number">Cantitatea biletelor primite</label>
         <input
+          className="input"
           type="number"
           id="tickets-number"
           value={ticketsNumber}
@@ -104,9 +95,11 @@ const TicketsEntryForm: React.FC<TicketsEntryFormProps> = ({ onTicketsAdded }) =
           }}
         />
       </div>
-      <div>
-        <label htmlFor="tickets-serial">Numărul unic al primului bilet: </label>
+
+      <div className="field">
+        <label className="field__label" htmlFor="tickets-serial">Numărul unic al primului bilet</label>
         <input
+          className="input"
           type="number"
           id="tickets-serial"
           value={firstSerial}
@@ -120,12 +113,13 @@ const TicketsEntryForm: React.FC<TicketsEntryFormProps> = ({ onTicketsAdded }) =
           }}
         />
       </div>
-      <div>
-        <label htmlFor="serial-calc">Numărul unic al ultimului bilet: </label>
-        <input type="text" id="serial-calc" value={lastSerial} readOnly />
+
+      <div className="field">
+        <label className="field__label" htmlFor="serial-calc">Numărul unic al ultimului bilet</label>
+        <input className="input" type="text" id="serial-calc" value={lastSerial} readOnly />
       </div>
 
-      <button className="tickets__entry-button" type="submit">Adaugă</button>
+      <button className="btn" type="submit">Adaugă</button>
     </form>
   );
 };

@@ -11,19 +11,21 @@ createRoot(document.getElementById('root')!).render(
       toastOptions={{
         duration: 4000,
         style: {
-          fontFamily: 'Roboto, sans-serif',
+          fontFamily: 'var(--font-family-base)',
           fontSize: '15px',
+          borderRadius: 'var(--radius-md)',
+          boxShadow: 'var(--shadow-md)',
         },
         success: {
           style: {
-            background: '#f0fdf4',
-            color: '#166534',
+            background: 'var(--color-success-bg)',
+            color: 'var(--color-success)',
           },
         },
         error: {
           style: {
-            background: '#fef2f2',
-            color: '#991b1b',
+            background: 'var(--color-danger-bg)',
+            color: 'var(--color-danger)',
           },
         },
       }}

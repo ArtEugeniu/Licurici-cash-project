@@ -15,7 +15,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'overlappingTicketRanges') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>Lot 1</th>
@@ -40,7 +40,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'salesSerialMismatches') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>Data</th>
@@ -69,7 +69,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'orphanTicketSales') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>ID</th>
@@ -96,7 +96,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'duplicateSerials') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>Lot</th>
@@ -121,7 +121,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'batchesWithoutSerialPointer' || expandedIntegrityKey === 'invalidTicketRanges') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>Lot</th>
@@ -144,7 +144,7 @@ const IntegrityDetails: React.FC<IntegrityDetailsProps> = ({ integrityResult, ex
 
   if (expandedIntegrityKey === 'serialPointersWithoutBatch') {
     return (
-      <table className="tickets__integrity-details-table">
+      <table className="table">
         <thead>
           <tr>
             <th>ID</th>

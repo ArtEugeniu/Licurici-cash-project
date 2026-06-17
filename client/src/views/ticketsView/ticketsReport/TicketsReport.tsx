@@ -1,5 +1,6 @@
 ﻿import './TicketsReport.scss';
 import { useEffect, useState } from 'react';
+import EmptyState from '../../../components/emptyState/EmptyState';
 import { getApiErrorMessage } from '../../../api/client';
 import { reportsApi } from '../../../api/reportsApi';
 import { notifyError } from '../../../utils/toast';
@@ -55,6 +56,11 @@ const TicketsReport: React.FC = () => {
       />
       {loading ? (
         <p className="app-status app-status--loading">Se încarcă raportul...</p>
+      ) : report.length === 0 ? (
+        <EmptyState
+          title="Nu există bilete în perioada selectată"
+          message="Modificați intervalul de date sau verificați dacă au fost vânzări înregistrate."
+        />
       ) : (
         <>
           <TicketsReportTable report={report} />

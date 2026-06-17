@@ -1,4 +1,5 @@
 ﻿import { useState, useEffect } from "react";
+import EmptyState from '../../../../components/emptyState/EmptyState';
 import { scheduleApi } from '../../../../api/scheduleApi';
 import type { Sale, ScheduleItem } from '../../../../api/types';
 import { generateDailyReportPDF } from '../../../../utils/generateDailyReportPDF';
@@ -127,19 +128,26 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
   );
 
   return (
-    <div className="daily">
-      <h2 className="daily__title">Rapoarte zilnice</h2>
-      <label className="daily__date">
-        Selectați data:{" "}
+    <div className="daily report-panel">
+      <label className="daily__date field">
+        <span className="field__label">Selectați data</span>
         <input
-          className="daily__date-input"
+          className="input input--inline daily__date-input"
           type="date"
           value={selectedDate}
           onChange={(e) => setSelectedDate(e.target.value)}
         />
       </label>
-      <div className="daily__table-wrapper">
-        <table className="daily__table">
+
+      {filteredSales.length === 0 ? (
+        <EmptyState
+          title="Nu există vânzări în această zi"
+          message={`Nu au fost înregistrate vânzări pentru ${selectedDate.split('-').reverse().join('-')}.`}
+        />
+      ) : (
+        <>
+      <div className="table-scroll">
+        <table className="table table--center">
           <thead>
             <tr>
               <th>Data</th>
@@ -200,7 +208,7 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
         <p><strong>Bilete 200 lei:</strong> {specialTickets} bilete — {specialTickets * 200} MDL</p>
         <p><strong>Total:</strong> {totalTickets} bilete — {totalAmount} MDL</p>
         <button
-          className="daily__pdf-button"
+          className="btn"
           onClick={() => {
             const reportData: DailyReportData = {
               selectedDate,
@@ -223,6 +231,8 @@ const DailyReports: React.FC<DailyReportsProps> = ({ sales }) => {
           Descarcă PDF
         </button>
       </div>
+        </>
+      )}
     </div>
   )
 }

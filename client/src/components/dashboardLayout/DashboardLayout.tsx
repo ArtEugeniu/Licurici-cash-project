@@ -8,11 +8,10 @@ import TicketsView from '../../views/ticketsView/TicketsView';
 
 interface DashboardLayoutProps {
   activeTab: string;
-  setActiveTab: (tab: string) => void
+  setActiveTab: (tab: string) => void;
 }
 
 const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, setActiveTab }) => {
-
   const renderContent = () => {
     switch (activeTab) {
       case 'program':
@@ -21,24 +20,22 @@ const DashboardLayout: React.FC<DashboardLayoutProps> = ({ activeTab, setActiveT
         return <SpectaclesView />;
       case 'rapoarte':
         return <ReportsView />;
-        case 'bilete':
+      case 'bilete':
         return <TicketsView />;
       default:
-        return <ScheduleView />
+        return <ScheduleView />;
     }
-  }
+  };
 
   return (
-    <>
-      <Header />
-      <main>
-        <div className="container">
-          <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-          {renderContent()}
-        </div>
-      </main>
-    </>
-  )
-}
+    <div className="app-shell">
+      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
+      <div className="app-shell__main">
+        <Header />
+        <main className="app-shell__content">{renderContent()}</main>
+      </div>
+    </div>
+  );
+};
 
 export default DashboardLayout;

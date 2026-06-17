@@ -6,8 +6,8 @@ type TicketsReportTableProps = {
 
 const TicketsReportTable: React.FC<TicketsReportTableProps> = ({ report }) => {
   return (
-    <div className="ticketsReport__table-wrapper">
-      <table className="ticketsReport__table">
+    <div className="table-scroll">
+      <table className="table table--center">
         <thead>
           <tr>
             <th>Nr. Serie</th>

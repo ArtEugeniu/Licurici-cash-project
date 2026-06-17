@@ -47,6 +47,7 @@ const TicketsPeriodReport: React.FC = () => {
       }
     }
   };
+
   const downloadReport = async () => {
     const data = await fetchReportData(dateFrom, dateTo, false);
     if (!data) {
@@ -62,24 +63,38 @@ const TicketsPeriodReport: React.FC = () => {
   }, [dateFrom, dateTo]);
 
   return (
-    <div className="tickets__report-period">
-      <h3>Raport pe perioada</h3>
-      <div className="period__dates">
-        <label>
-          De la: <input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+    <div className="tickets__report-period report-panel">
+      <div className="report-toolbar">
+        <label className="field">
+          <span className="field__label">De la</span>
+          <input
+            className="input input--inline"
+            type="date"
+            value={dateFrom}
+            onChange={(e) => setDateFrom(e.target.value)}
+          />
         </label>
-        <label>
-          Până la: <input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+        <label className="field">
+          <span className="field__label">Până la</span>
+          <input
+            className="input input--inline"
+            type="date"
+            value={dateTo}
+            onChange={(e) => setDateTo(e.target.value)}
+          />
         </label>
       </div>
+
       <TicketsPeriodReportPreview
         data={reportData}
         loading={previewLoading}
         error={previewError}
       />
-      <div className="period__actions">
+
+      <div className="report-actions">
         <button
-          className="period__pdf-button"
+          className="btn"
+          type="button"
           onClick={downloadReport}
           disabled={previewLoading}
         >

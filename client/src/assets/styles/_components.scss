@@ -1,0 +1,355 @@
+@use 'variables' as *;
+@use 'mixins' as *;
+
+// ─── Page ────────────────────────────────────────────────────────────────────
+.page {
+  @include page-container;
+  position: relative;
+}
+
+.page-title {
+  @include page-title;
+}
+
+.page-subtitle {
+  font-size: $font-size-md;
+  color: $color-text-muted;
+  text-align: center;
+  margin-top: calc(-1 * #{$space-4});
+  margin-bottom: $space-6;
+}
+
+// ─── Buttons ─────────────────────────────────────────────────────────────────
+.btn {
+  @include btn-primary;
+
+  &--secondary {
+    @include btn-secondary;
+  }
+
+  &--danger {
+    @include btn-danger;
+  }
+
+  &--ghost {
+    @include btn-ghost;
+  }
+
+  &--lg {
+    @include btn-lg;
+  }
+
+  &--sm {
+    @include btn-sm;
+  }
+
+  &--block {
+    width: 100%;
+  }
+}
+
+// ─── Inputs ──────────────────────────────────────────────────────────────────
+.input,
+.select,
+.textarea {
+  @include input-base;
+}
+
+.input--inline,
+.select--inline {
+  @include input-inline;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: $space-2;
+
+  &__label {
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    color: $color-text;
+  }
+
+  &__hint {
+    font-size: $font-size-sm;
+    color: $color-text-muted;
+  }
+
+  &__error {
+    font-size: $font-size-sm;
+    color: $color-danger;
+    font-weight: $font-weight-medium;
+  }
+}
+
+// ─── Cards ───────────────────────────────────────────────────────────────────
+.card {
+  @include card-base;
+  @include card-padding('md');
+
+  &--interactive {
+    @include card-interactive;
+    @include card-padding('md');
+  }
+
+  &--sm {
+    @include card-padding('sm');
+  }
+
+  &--lg {
+    @include card-padding('lg');
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    margin-bottom: $space-3;
+    color: $color-text;
+  }
+
+  &__body {
+    color: $color-text-muted;
+    font-size: $font-size-base;
+  }
+}
+
+// ─── Tabs ────────────────────────────────────────────────────────────────────
+.tabs {
+  @include tabs-list;
+
+  &__tab {
+    @include tab-item;
+  }
+
+  &__panel {
+    padding: $space-2 0 $space-8;
+    animation: panel-fade-in 0.25s ease;
+  }
+}
+
+@keyframes panel-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+// ─── Report panels ───────────────────────────────────────────────────────────
+.report-panel {
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+}
+
+.report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-4;
+  align-items: flex-end;
+}
+
+.report-summary {
+  @include card-base;
+  @include card-padding('md');
+
+  h3 {
+    margin-bottom: $space-3;
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+  }
+
+  p {
+    margin: $space-1 0;
+    font-weight: $font-weight-medium;
+    color: $color-text-muted;
+  }
+}
+
+.report-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $space-3;
+}
+
+// ─── Empty state ─────────────────────────────────────────────────────────────
+.empty-state {
+  @include card-base;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: $space-3;
+  padding: $space-10 $space-6;
+  text-align: center;
+  border-style: dashed;
+  background-color: $color-surface-muted;
+
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: $radius-full;
+    background-color: $color-primary-light;
+    color: $color-primary;
+    font-size: $font-size-2xl;
+    line-height: 1;
+  }
+
+  &__title {
+    font-size: $font-size-lg;
+    font-weight: $font-weight-semibold;
+    color: $color-text;
+  }
+
+  &__message {
+    max-width: 420px;
+    font-size: $font-size-base;
+    color: $color-text-muted;
+    line-height: $line-height-relaxed;
+  }
+}
+
+// ─── Tables ──────────────────────────────────────────────────────────────────
+.table-wrapper {
+  @include table-wrapper;
+}
+
+.table {
+  @include table-base;
+
+  &--center {
+    th,
+    td {
+      text-align: center;
+    }
+  }
+}
+
+.table-scroll {
+  @include table-wrapper;
+  max-height: 432px;
+}
+
+// ─── Modal ───────────────────────────────────────────────────────────────────
+@keyframes modal-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes modal-slide-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-root {
+  position: fixed;
+  inset: 0;
+  z-index: $z-modal-backdrop;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: $space-4;
+  animation: modal-fade-in 0.2s ease;
+}
+
+.modal-backdrop {
+  @include modal-backdrop;
+  border: none;
+  padding: 0;
+  cursor: default;
+}
+
+.modal {
+  @include modal-panel;
+  display: flex;
+  flex-direction: column;
+  gap: $space-5;
+
+  &__title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-bold;
+    color: $color-text;
+    text-align: center;
+  }
+
+  &__body {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
+  }
+
+  &__summary {
+    @include card-base;
+    @include card-padding('sm');
+    background-color: $color-primary-light;
+    border-color: rgba($color-primary, 0.2);
+    font-size: $font-size-base;
+
+    p {
+      margin: $space-1 0;
+    }
+
+    &--center {
+      text-align: center;
+      font-size: $font-size-lg;
+    }
+  }
+
+  &__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: $space-3;
+    margin-top: $space-2;
+  }
+}
+
+// ─── Status / alerts ─────────────────────────────────────────────────────────
+.banner {
+  @include status-banner($color-info-bg, rgba($color-info, 0.3), $color-info);
+
+  &--success {
+    @include status-banner($color-success-bg, rgba($color-success, 0.3), $color-success);
+  }
+
+  &--warning {
+    @include status-banner($color-warning-bg, rgba($color-warning, 0.35), $color-warning);
+  }
+
+  &--danger {
+    @include status-banner($color-danger-bg, rgba($color-danger, 0.3), $color-danger);
+  }
+
+  &--info {
+    @include status-banner($color-primary-light, rgba($color-primary, 0.25), $color-primary-dark);
+  }
+}
+
+.app-status {
+  padding: $space-4;
+  text-align: center;
+  font-weight: $font-weight-medium;
+  font-size: $font-size-base;
+  color: $color-text-muted;
+
+  &--loading {
+    color: $color-primary-dark;
+  }
+
+  &--empty {
+    color: $color-text-muted;
+  }
+}

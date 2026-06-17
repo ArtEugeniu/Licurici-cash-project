@@ -1,5 +1,6 @@
 ﻿import './ScheduleView.scss';
 import { useEffect, useState } from 'react';
+import EmptyState from '../../components/emptyState/EmptyState';
 import { getApiErrorMessage } from '../../api/client';
 import { salesApi } from '../../api/salesApi';
 import { scheduleApi } from '../../api/scheduleApi';
@@ -135,11 +136,11 @@ const ScheduleView: React.FC = () => {
 
 
   return (
-    <div className='program'>
-      <h2 className='program__title'>Program</h2>
+    <div className="program page">
+      <h2 className="page-title">Program</h2>
       <div
-        className={`program__stock ${
-          ticketStock?.currentRoll && ticketStock.currentRoll.remaining < 50 ? 'program__stock--low' : ''
+        className={`program__stock banner banner--info ${
+          ticketStock?.currentRoll && ticketStock.currentRoll.remaining < 50 ? 'program__stock--low banner--warning' : ''
         }`}
       >
         {remainingLoading ? (
@@ -175,6 +176,11 @@ const ScheduleView: React.FC = () => {
       {showModalEdit && <ScheduleViewEditModal selectedSpectacle={selectedSpectacle} setShowModalEdit={setShowModalEdit} onConfirm={editSpectacle} />}
       {scheduleLoading ? (
         <p className="app-status app-status--loading">Se încarcă programul...</p>
+      ) : scheduleData.length === 0 ? (
+        <EmptyState
+          title="Programul este gol"
+          message="Nu există spectacole programate de astăzi înainte. Adăugați spectacole din secțiunea Spectacole."
+        />
       ) : (
       <ul className="program__list">
         {scheduleData.map(item => {
@@ -182,24 +188,40 @@ const ScheduleView: React.FC = () => {
           const isPendingDelete = pendingDeleteId === item.id;
 
           return (
-            <li className="program__item" key={item.id} onClick={() => (setShowModal(true), setSelectedSpectacle(item))}>
-              <h3 className="program__item-title">{item.title} <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span></h3>
-              <div className='program__item-info'>
-                <div className='program__item-time'>Ora: {item.time}</div>
-                <div className="program__item-date">Data: {formateDate(item.date)}</div>
-                <div className="program__item-sold">
-                  Vândute: {soldCount} {soldCount === 1 ? 'bilet' : 'bilete'}
+            <li
+              className="program__item"
+              key={item.id}
+              onClick={() => (setShowModal(true), setSelectedSpectacle(item))}
+            >
+              <div className="program__item-main">
+                <h3 className="program__item-title">
+                  {item.title}{' '}
+                  <span>{item.type === 'Premiera' ? '(Premiera)' : ''}</span>
+                </h3>
+                <div className="program__item-meta">
+                  <span className="program__meta-chip">Ora: {item.time}</span>
+                  <span className="program__meta-chip">Data: {formateDate(item.date)}</span>
+                  <span className="program__meta-chip program__meta-chip--sold">
+                    Vândute: {soldCount} {soldCount === 1 ? 'bilet' : 'bilete'}
+                  </span>
                 </div>
-                <button className='program__item-button' onClick={(e) => (e.stopPropagation(), setShowModalEdit(true), setSelectedSpectacle(item))}>Editează</button>
+              </div>
+              <div className="program__item-actions">
                 <button
-                  className={`program__item-button ${isPendingDelete ? 'program__item-button--confirm' : ''}`}
+                  className="btn btn--secondary btn--sm"
+                  onClick={(e) => (e.stopPropagation(), setShowModalEdit(true), setSelectedSpectacle(item))}
+                >
+                  Editează
+                </button>
+                <button
+                  className={`btn btn--sm ${isPendingDelete ? 'btn--danger' : 'btn--secondary'}`}
                   onClick={(e) => (e.stopPropagation(), removeSpectacle(item.id))}
                 >
                   {isPendingDelete ? 'Confirmați?' : 'Șterge'}
                 </button>
                 {isPendingDelete && (
                   <button
-                    className="program__item-button program__item-button--cancel"
+                    className="btn btn--ghost btn--sm"
                     onClick={(e) => (e.stopPropagation(), setPendingDeleteId(null))}
                   >
                     Anulează
@@ -207,7 +229,7 @@ const ScheduleView: React.FC = () => {
                 )}
               </div>
             </li>
-          )
+          );
         })}
       </ul>
       )}

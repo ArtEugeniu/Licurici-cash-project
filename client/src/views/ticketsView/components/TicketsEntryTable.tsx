@@ -14,8 +14,8 @@ const formatDate = (date: string) => {
 
 const TicketsEntryTable: React.FC<TicketsEntryTableProps> = ({ ticketsInList }) => {
   return (
-    <div className="tickets__entry-report">
-      <table className="tickets__entry-table">
+    <div className="table-scroll tickets__entry-report">
+      <table className="table table--center">
         <thead>
           <tr>
             <th>Data</th>

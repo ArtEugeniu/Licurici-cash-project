@@ -1,6 +1,6 @@
-﻿import './ScheduleViewModal.scss';
-import { useState } from 'react';
+﻿import { useState } from 'react';
 import { v4 as uuid } from 'uuid';
+import Modal from '../../components/modal/Modal';
 import { getApiErrorMessage } from '../../api/client';
 import { salesApi } from '../../api/salesApi';
 import type { ScheduleItem } from '../../api/types';
@@ -8,10 +8,10 @@ import { notifyError, notifySuccess } from '../../utils/toast';
 import type { CurrentRollStock } from '../../utils/remainingTickets';
 
 interface ScheduleViewModalProps {
-  selectedSpectacle: ScheduleItem
-  setShowModal: React.Dispatch<React.SetStateAction<boolean>>
-  currentRoll: CurrentRollStock | null
-  onSaleComplete?: () => void
+  selectedSpectacle: ScheduleItem;
+  setShowModal: React.Dispatch<React.SetStateAction<boolean>>;
+  currentRoll: CurrentRollStock | null;
+  onSaleComplete?: () => void;
 }
 
 const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({
@@ -39,6 +39,8 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({
   const rollErrorMessage = currentRoll === null
     ? 'Nu există bilete disponibile la casa de bilete'
     : `Nu sunt suficiente bilete în rolă. Rămase: ${currentRoll.remaining}`;
+
+  const closeModal = () => setShowModal(false);
 
   const handleConfirmClick = () => {
     if (ticketNumber <= 0) {
@@ -84,63 +86,59 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({
       );
 
       onSaleComplete?.();
-      setShowModal(false);
+      closeModal();
     } catch (error) {
       notifyError(getApiErrorMessage(error, 'Eroare la vânzare sau tipărire'));
     } finally {
       setIsSubmitting(false);
     }
   };
+
   if (showConfirmStep) {
     return (
-      <div className="scheduleModal">
-        <h2 className="scheduleModal__title">Confirmați vânzarea</h2>
-        <div className="scheduleModal__confirm-summary">
+      <Modal title="Confirmați vânzarea" onClose={() => !isSubmitting && setShowConfirmStep(false)}>
+        <div className="modal__summary">
           <p><strong>Spectacol:</strong> {selectedSpectacle.title}</p>
           <p><strong>Data:</strong> {formattedDate} {selectedSpectacle.time}</p>
           <p><strong>Bilete:</strong> {ticketNumber}</p>
           <p><strong>Plată:</strong> {paymentLabel}</p>
           <p><strong>Total:</strong> {totalPrice()} Lei</p>
         </div>
-        <div className="scheduleModal__buttons">
-          <button
-            className="scheduleModal__accept"
-            onClick={addSale}
-            disabled={isSubmitting}
-          >
+        <div className="modal__actions">
+          <button className="btn btn--lg" onClick={addSale} disabled={isSubmitting}>
             {isSubmitting ? 'Se procesează...' : 'Finalizează'}
           </button>
-          <button
-            className="scheduleModal__cancel"
-            onClick={() => setShowConfirmStep(false)}
-            disabled={isSubmitting}
-          >
+          <button className="btn btn--secondary btn--lg" onClick={() => setShowConfirmStep(false)} disabled={isSubmitting}>
             Înapoi
           </button>
         </div>
-      </div>
+      </Modal>
     );
   }
 
   return (
-    <div className="scheduleModal">
-      <h2 className="scheduleModal__title">
-        {selectedSpectacle.title} ({selectedSpectacle.type}) {selectedSpectacle.date}
-      </h2>
-      <select
-        className="scheduleModal__select"
-        name="payment-method"
-        id="payment-method"
-        value={paymentMethod}
-        onChange={(e) => setPaymentMethod(e.target.value)}
-        disabled={isSubmitting}
-      >
-        <option value="cash">Numerar</option>
-        <option value="card">Card</option>
-      </select>
-      <div className="scheduleModal__ticket-number">
-        <label htmlFor="tickets-number">Numărul de bilete: </label>
+    <Modal
+      title={`${selectedSpectacle.title} (${selectedSpectacle.type})`}
+      onClose={() => !isSubmitting && closeModal()}
+    >
+      <div className="field">
+        <label className="field__label" htmlFor="payment-method">Metodă de plată</label>
+        <select
+          className="select"
+          id="payment-method"
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          disabled={isSubmitting}
+        >
+          <option value="cash">Numerar</option>
+          <option value="card">Card</option>
+        </select>
+      </div>
+
+      <div className="field">
+        <label className="field__label" htmlFor="tickets-number">Numărul de bilete</label>
         <input
+          className="input"
           type="number"
           id="tickets-number"
           min={1}
@@ -149,41 +147,31 @@ const ScheduleViewModal: React.FC<ScheduleViewModalProps> = ({
           disabled={isSubmitting}
         />
         {currentRoll ? (
-          <p className="scheduleModal__roll-stock">
+          <p className="field__hint">
             În rolă curentă: {currentRoll.remaining}{' '}
             {currentRoll.remaining === 1 ? 'bilet' : 'bilete'} ({currentRoll.nextSerial} - {currentRoll.serialTo})
           </p>
         ) : (
-          <p className="scheduleModal__roll-stock scheduleModal__roll-stock--error">
-            Nu există bilete disponibile la casa de bilete
-          </p>
+          <p className="field__error">Nu există bilete disponibile la casa de bilete</p>
         )}
         {currentRoll && ticketNumber > currentRoll.remaining && (
-          <p className="scheduleModal__roll-stock scheduleModal__roll-stock--error">
-            {rollErrorMessage}
-          </p>
+          <p className="field__error">{rollErrorMessage}</p>
         )}
       </div>
-      <div className="scheduleModal__total">
-        Total: <span>{totalPrice()} Lei</span>
+
+      <div className="modal__summary modal__summary--center">
+        <strong>Total: {totalPrice()} Lei</strong>
       </div>
-      <div className="scheduleModal__buttons">
-        <button
-          className="scheduleModal__accept"
-          onClick={handleConfirmClick}
-          disabled={isSubmitting || isRollBlocked}
-        >
+
+      <div className="modal__actions">
+        <button className="btn btn--lg" onClick={handleConfirmClick} disabled={isSubmitting || isRollBlocked}>
           Confirmă
         </button>
-        <button
-          className="scheduleModal__cancel"
-          onClick={() => setShowModal(false)}
-          disabled={isSubmitting}
-        >
-          Declina
+        <button className="btn btn--secondary btn--lg" onClick={closeModal} disabled={isSubmitting}>
+          Declină
         </button>
       </div>
-    </div>
+    </Modal>
   );
 };
 

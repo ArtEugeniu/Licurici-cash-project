@@ -6,5 +6,10 @@ server/.env
 
 client/build/
 server/dist/server/db/tickets.db
+server/db/backups/
+server/db/*.backup*
+server/ticket_*.pdf
+server/scripts/*_output.json
+server/scripts/*_result.json
 
 node_modules/

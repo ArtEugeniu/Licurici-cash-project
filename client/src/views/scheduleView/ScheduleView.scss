@@ -1,108 +1,79 @@
-.program {
-  width: 100%;
-  padding: 0 25px;
+@use '../../assets/styles/variables' as *;
+@use '../../assets/styles/mixins' as *;
 
-  &__title {
-    font-size: 40px;
-    text-align: center;
-    padding: 25px 0 10px;
-  }
+.program {
+  position: relative;
 
   &__stock {
-    text-align: center;
-    font-size: 18px;
-    font-weight: 500;
-    padding: 10px 16px;
-    margin-bottom: 20px;
-    background-color: #f0ebff;
-    border-radius: 8px;
-    border: 1px solid #5300ff;
-    color: #330099;
-
     p + p {
-      margin-top: 6px;
+      margin-top: $space-2;
     }
 
     &-roll {
-      font-size: 16px;
-      font-weight: 400;
+      font-size: $font-size-base;
+      font-weight: $font-weight-normal;
     }
+  }
 
-    &--low {
-      background-color: #fff4e5;
-      border-color: #e67e00;
-      color: #9a5200;
-    }
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: $space-4;
   }
 
   &__item {
-    background-color: #ccc;
-    padding: 15px;
-    border-radius: 15px;
+    @include card-interactive;
+    @include card-padding('md');
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
-    cursor: pointer;
-    transition: color 0.2s, background-color 0.2s, opacity 0.2s;
+    gap: $space-4;
+    flex-wrap: wrap;
+  }
 
-    &:hover {
-      background-color: #5300ff;
-      color: #fff;
-    }
+  &__item-main {
+    flex: 1;
+    min-width: 220px;
+  }
 
-    &:active {
-      opacity: 0.5;
-    }
+  &__item-title {
+    font-size: $font-size-xl;
+    font-weight: $font-weight-semibold;
+    color: $color-text;
+    margin-bottom: $space-3;
 
-    &-title {
-      font-size: 25px;
-    }
-
-    &-info {
-      display: flex;
-      gap: 25px;
-      font-size: 20px;
-    }
-
-    &-sold {
-      font-weight: 600;
-      padding: 4px 10px;
-      border-radius: 6px;
-      background-color: rgba(83, 0, 255, 0.12);
-    }
-
-    &:hover &-sold {
-      background-color: rgba(255, 255, 255, 0.2);
-    }
-
-    & div {
-      display: flex;
-      align-items: center;
+    span {
+      color: $color-accent;
+      font-weight: $font-weight-medium;
     }
   }
 
-  &__item-button {
-    background-color: #000;
-    padding: 5px 10px;
-    border-radius: 5px;
-    border: 1px solid black;
-    color: white;
-    transition: background-color 0.2s, color 0.2s;
+  &__item-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+  }
 
-    &:hover {
-      background-color: red;
-      color: black;
-    }
+  &__meta-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: $space-1 $space-3;
+    border-radius: $radius-full;
+    background-color: $color-primary-light;
+    color: $color-primary-dark;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+  }
 
-    &--confirm {
-      background-color: #b00020;
-      color: #fff;
-    }
+  &__meta-chip--sold {
+    background-color: rgba($color-success, 0.12);
+    color: $color-success;
+  }
 
-    &--cancel {
-      background-color: #666;
-      color: #fff;
-    }
+  &__item-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: $space-2;
+    align-items: center;
   }
 }

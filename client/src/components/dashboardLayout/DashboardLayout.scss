@@ -1,4 +1,20 @@
-.container {
+@use '../../assets/styles/variables' as *;
+
+.app-shell {
   display: flex;
   min-height: 100vh;
+  background-color: $color-bg;
+
+  &__main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    min-height: 100vh;
+  }
+
+  &__content {
+    flex: 1;
+    overflow-x: hidden;
+  }
 }
